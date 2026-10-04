@@ -1,4 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
- <PropertyGroup><OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework><UseWPF>true</UseWPF><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><AssemblyName>AssettoServerManager</AssemblyName><Version>0.3.0</Version><InformationalVersion>0.3.0-preview</InformationalVersion></PropertyGroup>
+ <PropertyGroup><OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework><UseWPF>true</UseWPF><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><AssemblyName>AssettoServerManager</AssemblyName><Version>0.4.1</Version><InformationalVersion>0.4.1-preview</InformationalVersion></PropertyGroup>
  <ItemGroup><ProjectReference Include="../ServerManager.Core/ServerManager.Core.csproj" /></ItemGroup>
 </Project>

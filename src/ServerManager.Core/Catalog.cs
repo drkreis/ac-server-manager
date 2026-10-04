@@ -18,6 +18,7 @@ public record TrackInfo(string Id, string Layout, string Name, string Directory,
 {
     public string Label => Name + (Layout.Length > 0 ? " · " + Layout : "");
     public string Key => Id + "/" + Layout;
+    public override string ToString() => Label;
 }
 public record TrackGroup(string Id, string Name, IReadOnlyList<TrackInfo> Layouts)
 {

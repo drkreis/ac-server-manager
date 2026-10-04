@@ -80,7 +80,7 @@ public partial class MainWindow : Window
     private string slotFilter = "all", cmPath = "", lastSelectedPath = "";
     private readonly string settingsFile = Path.Combine(AppContext.BaseDirectory, "settings.json");
     private readonly string[] args;
-    private bool IsTestMode => args.Contains("--smoke") || args.Contains("--window-qa");
+    private bool IsTestMode => args.Contains("--smoke") || args.Contains("--window-qa") || args.Contains("--wizard-qa") || args.Contains("--wizard-download-qa");
     private Dictionary<string, string>? lastDiagnostics;
     private int lastCopies;
     public MainWindow(string[] args)
@@ -186,7 +186,7 @@ public partial class MainWindow : Window
     private void Scan()
     {
         var errors = new List<string>();
-        var profiles = ServerProfile.Discover(ServerRoot.Text, errors);
+        var profiles = Directory.Exists(ServerRoot.Text) ? ServerProfile.Discover(ServerRoot.Text, errors) : [];
         loading = true; ServerList.ItemsSource = profiles.Select(p => new ServerRow(p)).ToList(); loading = false;
         ApplyProcessStates();
         ServerCount.Text = T("Найдено {0}", profiles.Count);
@@ -275,6 +275,21 @@ public partial class MainWindow : Window
         var selected = row.Profile;
         if (!Discard()) { loading = true; ServerList.SelectedItem = ServerList.Items.OfType<ServerRow>().FirstOrDefault(r => r.Profile.Path == profile?.Path); loading = false; return; }
         try { Load(ServerProfile.Load(selected.Path)); } catch (Exception ex) { Fail(ex); }
+    }
+    private async void CreateServer(object sender, RoutedEventArgs e)
+    {
+        if (!Discard()) return;
+        try
+        {
+            var runtime = ServerList.Items.OfType<ServerRow>().Select(r => r.Profile.Path).FirstOrDefault(p => File.Exists(Path.Combine(p, "AssettoServer.exe")));
+            var wizard = new CreateServerWindow(ServerRoot.Text, GameRoot.Text, runtime, catalog) { Owner = this };
+            if (wizard.ShowDialog() != true || wizard.CreatedPath == null) return;
+            dirty = false; lastSelectedPath = wizard.CreatedPath;
+            ServerRoot.Text = wizard.SelectedServersRoot; GameRoot.Text = wizard.SelectedGamePath;
+            await InitializeAsync(); StoreSettings();
+            Status.Text = T("Создан сервер {0}. Проверьте настройки и нажмите «Запустить».", Path.GetFileName(wizard.CreatedPath));
+        }
+        catch (Exception ex) { Fail(ex); }
     }
     private void RefreshServers(object sender, RoutedEventArgs e) { if (Discard()) try { Scan(); } catch (Exception ex) { Fail(ex); } }
     private void ReloadProfile(object sender, RoutedEventArgs e) { if (profile != null && Discard()) try { Load(ServerProfile.Load(profile.Path)); } catch (Exception ex) { Fail(ex); } }

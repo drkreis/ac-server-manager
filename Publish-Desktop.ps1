@@ -26,7 +26,7 @@ if ((Test-Path -LiteralPath $publishDir) -or (Test-Path -LiteralPath $archive)) 
 if ($LASTEXITCODE -ne 0) { throw 'Core tests failed.' }
 & $taskSdk publish $project -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -p:PublishTrimmed=false -p:DebugType=None -p:DebugSymbols=false -o $publishDir
 if ($LASTEXITCODE -ne 0) { throw 'Publishing failed.' }
-foreach ($document in @('LICENSE', 'README.md', 'DESKTOP.md')) {
+foreach ($document in @('LICENSE', 'README.md', 'DESKTOP.md', 'WIZARD.md', 'PROJECT.md')) {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot $document) -Destination $publishDir
 }
 # Use notices from the exact runtime packages selected by the SDK.

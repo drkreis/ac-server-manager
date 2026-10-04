@@ -1,4 +1,4 @@
-# AC Server Manager 0.3 Preview
+# AC Server Manager 0.4.1 Preview
 
 A Windows application built with C#, WPF and .NET 10. PowerShell is only used for building and packaging.
 
@@ -14,20 +14,22 @@ Maximizing uses the native window frame with custom styling through WindowChrome
 
 ## Getting started
 
-Download the Windows x64 ZIP from [Releases](https://github.com/drkreis/ac-server-manager/releases), extract the entire archive into a writable folder and run `AssettoServerManager.exe`. .NET is already included in this archive. Keep the DLLs and other files alongside the EXE.
+This guide covers version **0.4.1-preview**. Available Windows x64 packages are listed in [Releases](https://github.com/drkreis/ac-server-manager/releases); a source checkout may be newer than a published package. Extract the entire portable archive into a writable folder and run `AssettoServerManager.exe`; .NET is included. Keep the DLLs and other files alongside the EXE.
 
-For a local build from source, double-click `Start-Manager.cmd` or `artifacts/desktop/AssettoServerManager.exe`. This regular build requires the .NET 10 Desktop Runtime x64.
+For a local build from source, double-click `Start-Manager.cmd` or `artifacts/desktop-0.4.1/AssettoServerManager.exe`. This regular build requires the .NET 10 Desktop Runtime x64.
 
 Building requires the .NET 10 SDK. The script uses the local SDK in `.tools/dotnet` if available, otherwise `dotnet` from PATH. Visual Studio is not required; the SDK and cache are excluded from Git. See [README.md](README.md) for build and portable packaging commands.
 
 ## Working with a server
+
+To create a new server, click **Create server** above the server list. The five-step wizard installs AssettoServer and generates the configurations without a Content Manager server preset. See [WIZARD.md](WIZARD.md) for the full walkthrough. The result is loaded into the editor; click **Start** when ready.
 
 1. Select your server folder and the game installation folder. Steam libraries are detected automatically. Paths are saved in `settings.json` alongside the EXE.
 2. In **Catalog**, search for cars by name, brand or ID. The details panel shows a skin preview and lets you add a player, traffic or mixed player/AI slot.
 3. In **Cars and slots**, select skins and roles, filter players and AI, and duplicate or delete slots. The `CAR_0`, `CAR_1` and subsequent numbers match the sections in the generated `entry_list.ini`. **↑ Move up / ↓ Move down** moves the selected car and updates the numbers automatically. When a filter is active, movement uses the neighboring visible slot in the full list. The new order takes effect after saving and restarting the server. To replace a car, select its slot, choose another car in the catalog and click **Replace selected slot**.
 4. Each track appears once in the track catalog; search uses the track name and ID. Select a track, choose a layout in its details panel and click **Use this track**. You can also change the current track's layout directly in **Overview**. The preview and pit box count update immediately; server changes take effect after saving and restarting.
 5. Check the settings and save. Missing `data.acd`, `surfaces.ini`, `.ai` and `.aip` files are copied from the game to the server. Existing files are not overwritten.
-6. Start the server. The manager checks ports, displays logs and checks the HTTP `/INFO` response. **Connect** opens the local server directly in CM without using the acstuff.ru website.
+6. Start the server. The manager checks ports, displays logs and checks the HTTP `/INFO` response. This readiness check does not perform an AC client handshake or prove that the game can join; the separate wizard integration checks test handshake acceptance. **Connect** opens the local server directly in CM without using the acstuff.ru website.
 
 After installing new mods, click **Refresh catalog** on the catalog tab. The server draft is preserved. Search fields include hints about what you can search for; the general guidance spans the width below the catalog. Scrollbar thumbs retain a minimum size even in a large catalog. The slot table displays row and column borders. Content IDs are compared without regard to case, matching Windows path behavior; mod descriptions containing literal line breaks are read without modifying the original JSON files.
 
@@ -47,14 +49,16 @@ Saving does not restart the server. To restore a backup, stop the server and cop
 
 ## Deferred features
 
-New server creation and AssettoServer installation; packing unpacked data into `data.acd`; updating existing server content; detailed weather, AI and plugin forms; port forwarding and external diagnostics. The presence of AI files does not confirm their suitability for traffic.
+Presets and server cloning; packing unpacked data into `data.acd`; updating existing server content; detailed weather, AI and plugin forms; port forwarding and external diagnostics. The presence of AI files does not confirm their suitability for traffic.
 
 ## Validation
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tests
-.\artifacts\desktop\AssettoServerManager.exe --smoke .\artifacts\qa
-.\artifacts\desktop\AssettoServerManager.exe --window-qa .\artifacts\window-qa
+.\artifacts\desktop-0.4.1\AssettoServerManager.exe --smoke .\artifacts\qa
+.\artifacts\desktop-0.4.1\AssettoServerManager.exe --window-qa .\artifacts\window-qa
 ```
 
 Core tests use temporary servers and check messages in both languages, slot reordering with field preservation, and mod metadata parsing. The smoke test reads real profiles and the catalog, exercises UI actions in memory, checks RU / EN switching while preserving drafts, and verifies language settings compatibility. It renders PNG screenshots in both languages. `--window-qa` additionally shows a test window, checks actual maximize/restore behavior, content bounds and modal dialog button results. These checks do not write live configurations or start servers. The build uses the local SDK or an SDK from PATH.
+
+Core tests also cover creation from a folder and ZIP, generated configuration and content, cancellation, failed installation cleanup, refusal to overwrite an existing server, ZIP path confinement and separation from private source data. Separate wizard integration checks exercise all five steps in Russian and English, start only a newly created test server and check its acceptance of an AC client handshake; see [README.md](README.md) for their behavior and requirements.

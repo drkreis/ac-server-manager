@@ -8,6 +8,7 @@ void MustThrow(Action action, string message) { try { action(); } catch { return
 void Put(string path, string text) { Directory.CreateDirectory(Path.GetDirectoryName(path)!); File.WriteAllText(path, text, new UTF8Encoding(true)); }
 try
 {
+    CreationTests.Run(Path.Combine(root, "creation"));
     var server = Path.Combine(root, "server"); var cfg = Path.Combine(server, "cfg");
     Put(Path.Combine(cfg, "server_cfg.ini"), "; retained\r\n[SERVER]\r\nNAME=Fixture\r\nTRACK=track\r\nCONFIG_TRACK=layout\r\nMAX_CLIENTS=10\r\nCARS=old;unused\r\nPASSWORD=private\r\nCUSTOM_SERVER=yes\r\n[WEATHER_0]\r\nGRAPHICS=3_clear\r\n");
     Put(Path.Combine(cfg, "extra_cfg.yml"), "# retained\r\nEnableAi: false # comment\r\nEnableWeatherFx: true\r\nAiParams:\r\n  UnknownNested: yes\r\n---\r\n!PluginConfiguration\r\nOption: retained\r\n");

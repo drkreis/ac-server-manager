@@ -607,24 +607,404 @@
     "Ru": "Не совпадает файл трассы {0} в игре и на сервере. Проверьте версии трассы и настройки CSP перед синхронизацией.",
     "En": "The game and server track file {0} differ. Check track versions and CSP settings before syncing."
   },
-  "OpenContentManager": { "Ru": "Открыть Content Manager", "En": "Open Content Manager" },
-  "ContentManagerOpened": { "Ru": "Content Manager открыт", "En": "Content Manager opened" },
-  "SearchCarsPlaceholder": { "Ru": "Поиск машин: название, марка или ID…", "En": "Search cars by name, brand or ID…" },
-  "SearchTracksPlaceholder": { "Ru": "Поиск трасс: название или ID…", "En": "Search tracks by name or ID…" },
-  "TrackLayoutLabel": { "Ru": "Вариант трассы", "En": "Track layout" },
-  "NoTrackLayouts": { "Ru": "Варианты не найдены в каталоге игры", "En": "No layouts found in the game catalog" },
-  "SingleTrackLayout": { "Ru": "У этой трассы один установленный вариант", "En": "This track has one installed layout" },
-  "CatalogIntro": { "Ru": "Установленные машины и трассы", "En": "Installed cars and tracks" },
-  "CatalogHint": { "Ru": "Добавляйте машины в слоты и выбирайте варианты трасс. При сохранении будут подготовлены недостающие серверные данные; существующие файлы не заменяются.", "En": "Add cars to slots and choose track layouts. Saving prepares missing server data; existing files are kept." },
-  "ServerStarting": { "Ru": "Запускается…", "En": "Starting…" },
-  "ServerRunning": { "Ru": "Запущен", "En": "Running" },
-  "ServerExternal": { "Ru": "Запущен вне менеджера", "En": "Running externally" },
-  "ServerUnknown": { "Ru": "Статус недоступен", "En": "Status unavailable" },
-  "ServerChecking": { "Ru": "Проверяю статус…", "En": "Checking status…" },
-  "ExternalServerHint": { "Ru": "\nПроцесс запущен отдельно. Остановите его в исходном окне или менеджере.", "En": "\nThis process was started separately. Stop it in its original window or manager." },
-  "UnknownServerHint": { "Ru": "\nНе удалось прочитать путь одного из процессов сервера.", "En": "\nCould not read the executable path of a server process." },
+  "OpenContentManager": {
+    "Ru": "Открыть Content Manager",
+    "En": "Open Content Manager"
+  },
+  "ContentManagerOpened": {
+    "Ru": "Content Manager открыт",
+    "En": "Content Manager opened"
+  },
+  "SearchCarsPlaceholder": {
+    "Ru": "Поиск машин: название, марка или ID…",
+    "En": "Search cars by name, brand or ID…"
+  },
+  "SearchTracksPlaceholder": {
+    "Ru": "Поиск трасс: название или ID…",
+    "En": "Search tracks by name or ID…"
+  },
+  "TrackLayoutLabel": {
+    "Ru": "Вариант трассы",
+    "En": "Track layout"
+  },
+  "NoTrackLayouts": {
+    "Ru": "Варианты не найдены в каталоге игры",
+    "En": "No layouts found in the game catalog"
+  },
+  "SingleTrackLayout": {
+    "Ru": "У этой трассы один установленный вариант",
+    "En": "This track has one installed layout"
+  },
+  "CatalogIntro": {
+    "Ru": "Установленные машины и трассы",
+    "En": "Installed cars and tracks"
+  },
+  "CatalogHint": {
+    "Ru": "Добавляйте машины в слоты и выбирайте варианты трасс. При сохранении будут подготовлены недостающие серверные данные; существующие файлы не заменяются.",
+    "En": "Add cars to slots and choose track layouts. Saving prepares missing server data; existing files are kept."
+  },
+  "ServerStarting": {
+    "Ru": "Запускается…",
+    "En": "Starting…"
+  },
+  "ServerRunning": {
+    "Ru": "Запущен",
+    "En": "Running"
+  },
+  "ServerExternal": {
+    "Ru": "Запущен вне менеджера",
+    "En": "Running externally"
+  },
+  "ServerUnknown": {
+    "Ru": "Статус недоступен",
+    "En": "Status unavailable"
+  },
+  "ServerChecking": {
+    "Ru": "Проверяю статус…",
+    "En": "Checking status…"
+  },
+  "ExternalServerHint": {
+    "Ru": "\nПроцесс запущен отдельно. Остановите его в исходном окне или менеджере.",
+    "En": "\nThis process was started separately. Stop it in its original window or manager."
+  },
+  "UnknownServerHint": {
+    "Ru": "\nНе удалось прочитать путь одного из процессов сервера.",
+    "En": "\nCould not read the executable path of a server process."
+  },
   "L149": {
     "En": "Slot",
     "Ru": "Слот"
+  },
+  "WTitle": {
+    "En": "Create server wizard",
+    "Ru": "Мастер создания сервера"
+  },
+  "WSubtitle": {
+    "En": "A new free-roam server — no configuration in Content Manager required.",
+    "Ru": "Новый сервер для свободной езды — без предварительной настройки в Content Manager."
+  },
+  "WServerName": {
+    "En": "New server name",
+    "Ru": "Название нового сервера"
+  },
+  "WRoot": {
+    "En": "New servers folder",
+    "Ru": "Папка для новых серверов"
+  },
+  "WFolder": {
+    "En": "New folder name",
+    "Ru": "Имя новой папки"
+  },
+  "WGame": {
+    "En": "Installed Assetto Corsa",
+    "Ru": "Установленная Assetto Corsa"
+  },
+  "WEngine": {
+    "En": "AssettoServer installation source",
+    "Ru": "Откуда установить AssettoServer"
+  },
+  "WDownload": {
+    "En": "Download the official stable release",
+    "Ru": "Скачать официальный стабильный релиз"
+  },
+  "WLocalFolder": {
+    "En": "Use an AssettoServer program folder",
+    "Ru": "Использовать папку программы AssettoServer"
+  },
+  "WLocalZip": {
+    "En": "Use a downloaded Windows x64 ZIP",
+    "Ru": "Использовать скачанный Windows x64 ZIP"
+  },
+  "WSourceHint": {
+    "En": "Downloading starts when you create the server. To work offline, select a ZIP or a folder containing AssettoServer.exe. Only program files are taken from that folder; configure the new server and its content here.",
+    "Ru": "Скачивание начнётся при создании. Для работы без интернета выберите ZIP или папку с AssettoServer.exe. Из папки берутся только файлы программы; настройки и контент нового сервера задаются здесь."
+  },
+  "WizardDownloadMb": {
+    "En": "Downloading AssettoServer: {0} MiB",
+    "Ru": "Загружаю AssettoServer: {0} МБ"
+  },
+  "WLayout": {
+    "En": "Track layout",
+    "Ru": "Вариант новой трассы"
+  },
+  "WTrackHint": {
+    "En": "AI traffic needs a suitable fast_lane.ai or fast_lane.aip. The wizard will check for a spline for the selected track.",
+    "Ru": "Для AI-трафика нужен подходящий fast_lane.ai или fast_lane.aip. Мастер проверит наличие сплайна выбранной трассы."
+  },
+  "WAddCar": {
+    "En": "+ Add car",
+    "Ru": "+ Добавить машину"
+  },
+  "WRemoveCar": {
+    "En": "Remove selected car",
+    "Ru": "Удалить выбранную машину"
+  },
+  "WSlotsHint": {
+    "En": "Quantity sets the number of slots for this car. Traffic uses dedicated slots; Player / AI uses an empty slot. You can change skins and ordering after creation.",
+    "Ru": "Количество — число слотов этой машины. Трафик занимает отдельные слоты; «Игрок / AI» использует свободный слот. Скины и порядок можно изменить после создания."
+  },
+  "WPractice": {
+    "En": "Free roam · infinite practice",
+    "Ru": "Свободная езда · бесконечная практика"
+  },
+  "WTime": {
+    "En": "Start time (HH:mm)",
+    "Ru": "Время начала (HH:mm)"
+  },
+  "WJoinPassword": {
+    "En": "Join password (optional)",
+    "Ru": "Пароль входа (необязательно)"
+  },
+  "WAdminPassword": {
+    "En": "Admin password (optional)",
+    "Ru": "Пароль администратора (необязательно)"
+  },
+  "WAdminHint": {
+    "En": "Leave blank to generate a random password. It is saved in cfg/server_cfg.ini. A custom password must have at least 8 characters.",
+    "Ru": "Оставьте пустым для случайного пароля. Он сохранится в cfg/server_cfg.ini. Свой пароль должен содержать не менее 8 символов."
+  },
+  "WPortsHint": {
+    "En": "Suggested ports account for known servers and active listeners. Change them if needed.",
+    "Ru": "Предложены порты с учётом известных серверов и текущих подключений. При необходимости измените их."
+  },
+  "WWeather": {
+    "En": "Enable WeatherFX (players need CSP)",
+    "Ru": "Включить WeatherFX (нужен CSP у игроков)"
+  },
+  "WLobby": {
+    "En": "List the server in the public lobby",
+    "Ru": "Показывать сервер в публичном lobby"
+  },
+  "WLobbyHint": {
+    "En": "Use Connect to join from this computer. Friends outside your network need access through your router and firewall.",
+    "Ru": "Для подключения с этого компьютера используйте «Подключиться». Для друзей вне вашей сети потребуется настроить доступ через роутер и брандмауэр."
+  },
+  "WReviewTitle": {
+    "En": "Ready to create",
+    "Ru": "Всё готово к созданию"
+  },
+  "WReviewHint": {
+    "En": "The wizard will prepare the program, configurations and selected content data in a separate folder. The server will then appear in the list — use Start to launch it.",
+    "Ru": "Мастер подготовит программу, конфиги и данные выбранного контента в отдельной папке. После создания сервер появится в списке — запустите его кнопкой «Запустить»."
+  },
+  "WBack": {
+    "En": "← Back",
+    "Ru": "← Назад"
+  },
+  "WNext": {
+    "En": "Next →",
+    "Ru": "Далее →"
+  },
+  "WCreate": {
+    "En": "Create server",
+    "Ru": "Создать сервер"
+  },
+  "WizardText1": {
+    "En": "Select a servers folder.",
+    "Ru": "Укажите папку серверов."
+  },
+  "WizardText2": {
+    "En": "Enter a valid new folder name without slashes or special characters.",
+    "Ru": "Введите допустимое имя новой папки без слешей и специальных символов."
+  },
+  "WizardText3": {
+    "En": "The folder already exists. Choose another name; existing servers are never overwritten.",
+    "Ru": "Папка уже существует. Выберите другое имя; существующие серверы не перезаписываются."
+  },
+  "WizardText4": {
+    "En": "Create the server outside the Assetto Corsa folder.",
+    "Ru": "Создавайте сервер вне папки Assetto Corsa."
+  },
+  "WizardText5": {
+    "En": "Enter a server name (up to 120 characters).",
+    "Ru": "Введите название сервера (до 120 символов)."
+  },
+  "WizardText6": {
+    "En": "Passwords must not contain line breaks.",
+    "Ru": "Пароль не должен содержать переносы строк."
+  },
+  "WizardText7": {
+    "En": "The admin password must have at least 8 characters.",
+    "Ru": "Пароль администратора должен содержать не менее 8 символов."
+  },
+  "WizardText8": {
+    "En": "Ports must be in the range 1–65535.",
+    "Ru": "Порты должны быть в диапазоне 1–65535."
+  },
+  "WizardText9": {
+    "En": "TCP and HTTP must use different ports.",
+    "Ru": "TCP и HTTP должны использовать разные порты."
+  },
+  "WizardText10": {
+    "En": "Enter the time in HH:mm format.",
+    "Ru": "Введите время в формате HH:mm."
+  },
+  "WizardText11": {
+    "En": "Select a track and layout from your installed content.",
+    "Ru": "Выберите трассу и вариант из установленного контента."
+  },
+  "WizardText12": {
+    "En": "The selected layout has no data/surfaces.ini. Check the track installation.",
+    "Ru": "У выбранного варианта нет data/surfaces.ini. Проверьте установку трассы."
+  },
+  "WizardText13": {
+    "En": "Add cars: a total of 1 to 255 slots is required.",
+    "Ru": "Добавьте машины: всего от 1 до 255 слотов."
+  },
+  "WizardText14": {
+    "En": "The track has {0} pit boxes and you selected {1} slots. Reduce the slot count.",
+    "Ru": "У трассы {0} пит-боксов; слотов {1}. Уменьшите количество слотов."
+  },
+  "WizardText15": {
+    "En": "Add at least one player slot.",
+    "Ru": "Добавьте хотя бы один слот для игрока."
+  },
+  "WizardText16": {
+    "En": "{0} has no data.acd. Pack the car data in Content Manager.",
+    "Ru": "Для {0} отсутствует data.acd. Упакуйте данные машины в Content Manager."
+  },
+  "WizardText17": {
+    "En": "Traffic needs a fast_lane.ai or fast_lane.aip for the selected track. Add a spline or remove the AI slots.",
+    "Ru": "Для трафика нужен fast_lane.ai или fast_lane.aip выбранной трассы. Добавьте сплайн или уберите AI-слоты."
+  },
+  "WizardText18": {
+    "En": "Installing AssettoServer…",
+    "Ru": "Устанавливаю AssettoServer…"
+  },
+  "WizardText19": {
+    "En": "Creating configurations and copying content data…",
+    "Ru": "Создаю конфиги и копирую данные контента…"
+  },
+  "WizardText20": {
+    "En": "Select a Windows x64 ZIP containing one AssettoServer.exe.",
+    "Ru": "Выберите Windows x64 ZIP с одним AssettoServer.exe."
+  },
+  "WizardText21": {
+    "En": "Links inside ZIP archives are not supported.",
+    "Ru": "Ссылки в ZIP не поддерживаются."
+  },
+  "WizardText22": {
+    "En": "The AssettoServer ZIP is too large.",
+    "Ru": "ZIP AssettoServer слишком большой."
+  },
+  "WizardText23": {
+    "En": "The AssettoServer installation is missing {0}. Select the complete Windows x64 ZIP or program folder.",
+    "Ru": "В установке AssettoServer отсутствует {0}. Выберите полный Windows x64 ZIP или папку программы."
+  },
+  "WizardText24": {
+    "En": "Invalid path in the server package.",
+    "Ru": "Некорректный путь в пакете сервера."
+  },
+  "WizardText25": {
+    "En": "Choose regular folders without symbolic links to create the server.",
+    "Ru": "Для создания сервера выберите обычные папки без символических ссылок."
+  },
+  "WizardText26": {
+    "En": "Checking the official AssettoServer release…",
+    "Ru": "Проверяю официальный релиз AssettoServer…"
+  },
+  "WizardText27": {
+    "En": "The official release has no Windows x64 ZIP. Select a downloaded ZIP manually.",
+    "Ru": "В официальном релизе не найден Windows x64 ZIP. Выберите скачанный ZIP вручную."
+  },
+  "WizardText28": {
+    "En": "Invalid official AssettoServer release package.",
+    "Ru": "Некорректный пакет официального релиза AssettoServer."
+  },
+  "WizardText29": {
+    "En": "The downloaded ZIP size does not match the release.",
+    "Ru": "Размер загруженного ZIP не совпадает с релизом."
+  },
+  "WizardText30": {
+    "En": "Downloading AssettoServer {0}: {1}%",
+    "Ru": "Загружаю AssettoServer {0}: {1}%"
+  },
+  "WizardText31": {
+    "En": "The AssettoServer ZIP checksum does not match.",
+    "Ru": "Контрольная сумма ZIP AssettoServer не совпадает."
+  },
+  "WizardText32": {
+    "En": "Each car's quantity must be between 1 and 255.",
+    "Ru": "Количество каждой машины должно быть от 1 до 255."
+  },
+  "WizardText33": {
+    "En": "Quantity",
+    "Ru": "Количество"
+  },
+  "WizardText34": {
+    "En": "One of the selected ports is in use. Change the ports or stop the other server.",
+    "Ru": "Один из выбранных портов занят. Измените порты или остановите другой сервер."
+  },
+  "WizardText35": {
+    "En": "AssettoServer program folder",
+    "Ru": "Папка программы AssettoServer"
+  },
+  "WizardText36": {
+    "En": "AssettoServer Windows x64 ZIP",
+    "Ru": "Windows x64 ZIP AssettoServer"
+  },
+  "WizardText37": {
+    "En": "New server and installation",
+    "Ru": "Новый сервер и установка"
+  },
+  "WizardText38": {
+    "En": "Track and layout",
+    "Ru": "Выбор трассы и варианта"
+  },
+  "WizardText39": {
+    "En": "Player and traffic cars",
+    "Ru": "Машины для игроков и трафика"
+  },
+  "WizardText40": {
+    "En": "Basic settings",
+    "Ru": "Основные параметры"
+  },
+  "WizardText41": {
+    "En": "Review before creating",
+    "Ru": "Проверка перед созданием"
+  },
+  "WizardText42": {
+    "En": "Select a folder containing AssettoServer.exe.",
+    "Ru": "Выберите папку с AssettoServer.exe."
+  },
+  "WizardText43": {
+    "En": "Select a downloaded AssettoServer ZIP.",
+    "Ru": "Выберите скачанный ZIP AssettoServer."
+  },
+  "WizardText44": {
+    "En": "Name: {0}\nFolder: {1}\nTrack: {2}\nSlots: {3} players · {4} AI\nPorts: TCP {5} · UDP {6} · HTTP {7}\nTime: {8}\nAssettoServer: {9}",
+    "Ru": "Название: {0}\nПапка: {1}\nТрасса: {2}\nСлоты: {3} игроков · {4} AI\nПорты: TCP {5} · UDP {6} · HTTP {7}\nВремя: {8}\nAssettoServer: {9}"
+  },
+  "WizardText45": {
+    "En": "Official stable release",
+    "Ru": "Официальный стабильный релиз"
+  },
+  "WizardText46": {
+    "En": "Creation canceled. No new server was created.",
+    "Ru": "Создание отменено. Новый сервер не создан."
+  },
+  "WizardText47": {
+    "En": "Could not download AssettoServer. Check your connection or select a local ZIP.",
+    "Ru": "Не удалось скачать AssettoServer. Проверьте интернет или выберите локальный ZIP."
+  },
+  "WizardText48": {
+    "En": "Select a car in the catalog.",
+    "Ru": "Выберите машину в каталоге."
+  },
+  "WizardText49": {
+    "En": "Server {0} created. Review its settings and click Start.",
+    "Ru": "Создан сервер {0}. Проверьте настройки и нажмите «Запустить»."
+  },
+  "WCustomSpline": {
+    "Ru": "Свой AI-сплайн (необязательно)",
+    "En": "Custom AI spline (optional)"
+  },
+  "WizardSplineError": {
+    "Ru": "Выберите существующий файл сплайна .ai или .aip.",
+    "En": "Select an existing .ai or .aip spline file."
+  },
+  "WizardSplineTitle": {
+    "Ru": "Сплайн AI выбранной трассы",
+    "En": "AI spline for the selected track"
   }
 }
