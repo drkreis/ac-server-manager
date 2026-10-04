@@ -1,55 +1,55 @@
 # AC Server Manager 0.3 Preview
 
-Приложение Windows на C# / WPF / .NET 10. PowerShell используется только для сборки.
+A Windows application built with C#, WPF and .NET 10. PowerShell is only used for building and packaging.
 
-Окно оформлено в едином тёмном стиле с собственными кнопками сворачивания, разворачивания и закрытия. Верхняя область сохраняет перетаскивание, двойной щелчок для разворачивания и изменение размеров по границам. Скроллбары используют оранжевый акцент. Основной шрифт — Bahnschrift, поля с путями и ID — Consolas; оба уже установлены на этом ПК.
+The window uses a consistent dark theme with custom minimize, maximize and close buttons. The title area supports dragging and double-clicking to maximize; the window can be resized from its edges. Scrollbars use the orange accent color. The main font is Bahnschrift; paths and IDs use Consolas.
 
-В заголовке — **AC / SERVER MANAGER** и переключатель **RU / EN**. Язык меняется сразу и сохраняется в `settings.json`. Переключение сохраняет несохранённые настройки, выбранные машины, скины и роли слотов. Переведены интерфейс, подсказки и сообщения проверки; названия контента и исходный вывод AssettoServer остаются такими, какими их предоставляют моды и сервер. При наведении рамка элементов списка сохраняет толщину, поэтому текст не сдвигается.
+The title bar contains **AC / SERVER MANAGER** and the **RU / EN** language selector. Language changes apply immediately and are saved in `settings.json`. Switching languages preserves unsaved settings, selected cars, skins and slot roles. The interface, tooltips and validation messages are translated; content names and raw AssettoServer output retain the text supplied by the mods and server. List item borders keep the same thickness on hover, so the text does not shift.
 
-Кнопки и выпадающие списки используют одинаковые скругления, рамки, отступы и оформление наведения. Кнопка Content Manager и переключатель языка имеют одинаковую высоту и шрифт; акцентные цвета сохранены для основных действий.
+Buttons and drop-down lists share corner shapes, borders, padding and hover styles. The Content Manager button and language selector use the same height and font; accent colors identify primary actions.
 
-Подтверждения, сообщения об ошибках и всплывающие подсказки оформлены в тёмном стиле приложения. У подтверждений Enter по умолчанию выбирает отмену; Escape и крестик также отменяют действие. Длинные сообщения прокручиваются. Кнопка **Content Manager** рядом с языком открывает CM независимо от выбранного сервера; при необходимости предлагает указать его EXE и запоминает путь.
+Confirmation dialogs, error messages and tooltips use the application's dark theme. In confirmation dialogs, Enter selects Cancel by default; Escape and the close button also cancel the action. Long messages can be scrolled. The **Content Manager** button next to the language selector opens CM independently of the selected server. If necessary, it asks you to select the CM executable and remembers its path.
 
-Разворачивание использует системную рамку с собственным оформлением через WindowChrome и переходы Windows. Контент компенсирует скрытую рамку изменения размеров с учётом DPI и рабочей области текущего монитора, поэтому нижние элементы остаются над панелью задач. Анимация зависит от системных настроек эффектов Windows. Основа поведения описана в [документации WindowChrome](https://learn.microsoft.com/en-us/dotnet/api/system.windows.shell.windowchrome).
+Maximizing uses the native window frame with custom styling through WindowChrome and Windows transitions. The content compensates for the hidden resize frame, accounting for DPI and the current monitor's working area so that bottom controls stay above the taskbar. Animations depend on Windows visual effects settings. See the [WindowChrome documentation](https://learn.microsoft.com/en-us/dotnet/api/system.windows.shell.windowchrome) for the underlying behavior.
 
-## Запуск
+## Getting started
 
-Для готовой программы скачайте Windows x64 ZIP из [Releases](https://github.com/drkreis/ac-server-manager/releases), распакуйте весь архив в доступную для записи папку и запустите `AssettoServerManager.exe`. .NET уже включён в этот архив. Сохраняйте DLL и остальные файлы рядом с EXE.
+Download the Windows x64 ZIP from [Releases](https://github.com/drkreis/ac-server-manager/releases), extract the entire archive into a writable folder and run `AssettoServerManager.exe`. .NET is already included in this archive. Keep the DLLs and other files alongside the EXE.
 
-Для локальной сборки из исходников дважды нажмите `Start-Manager.cmd` или `artifacts/desktop/AssettoServerManager.exe`. Такая сборка требует .NET 10 Desktop Runtime x64.
+For a local build from source, double-click `Start-Manager.cmd` or `artifacts/desktop/AssettoServerManager.exe`. This regular build requires the .NET 10 Desktop Runtime x64.
 
-Для сборки нужен .NET 10 SDK. Скрипт использует локальный SDK из `.tools/dotnet`, если он есть, иначе `dotnet` из PATH. Visual Studio не требуется; SDK и кэш не входят в Git. Для запуска готовой сборки нужен .NET 10 Desktop Runtime x64.
+Building requires the .NET 10 SDK. The script uses the local SDK in `.tools/dotnet` if available, otherwise `dotnet` from PATH. Visual Studio is not required; the SDK and cache are excluded from Git. See [README.md](README.md) for build and portable packaging commands.
 
-## Работа с сервером
+## Working with a server
 
-1. Выберите папку серверов и корневую папку игры. Steam-библиотеки определяются автоматически. Пути сохраняются в `settings.json` рядом с EXE.
-2. В **Каталоге** ищите машины по названию, бренду или ID. Карточка показывает превью скина и позволяет добавить слот игрока, трафика или смешанный слот.
-3. В **Машины и слоты** выбирайте скин и назначение, фильтруйте игроков и AI, дублируйте или удаляйте слот. Номера `CAR_0`, `CAR_1` и т. д. соответствуют секциям создаваемого `entry_list.ini`. Кнопки **↑ Выше / ↓ Ниже** перемещают выбранную машину; номера обновляются автоматически. При фильтре перемещение идёт до соседнего видимого слота в общем списке. Порядок применяется после сохранения и перезапуска сервера. Для замены выберите слот, затем машину в каталоге и нажмите «Заменить выбранный слот».
-4. В каталоге трасс каждая трасса показана один раз; поиск работает по названию трассы и её ID. После выбора трассы выберите вариант в её карточке и нажмите «Использовать трассу». Вариант текущей трассы также можно поменять прямо в **Обзоре**. Превью и число пит-боксов обновляются сразу; изменения применяются к серверу после сохранения и перезапуска.
-5. Проверьте настройки и сохраните. Недостающие `data.acd`, `surfaces.ini`, `.ai` и `.aip` копируются из игры в сервер. Уже существующие файлы не перезаписываются.
-6. Запустите сервер. Менеджер проверяет порты, показывает журнал и проверяет HTTP-ответ `/INFO`. **Подключиться** открывает локальный сервер напрямую в CM без сайта acstuff.ru.
+1. Select your server folder and the game installation folder. Steam libraries are detected automatically. Paths are saved in `settings.json` alongside the EXE.
+2. In **Catalog**, search for cars by name, brand or ID. The details panel shows a skin preview and lets you add a player, traffic or mixed player/AI slot.
+3. In **Cars and slots**, select skins and roles, filter players and AI, and duplicate or delete slots. The `CAR_0`, `CAR_1` and subsequent numbers match the sections in the generated `entry_list.ini`. **↑ Move up / ↓ Move down** moves the selected car and updates the numbers automatically. When a filter is active, movement uses the neighboring visible slot in the full list. The new order takes effect after saving and restarting the server. To replace a car, select its slot, choose another car in the catalog and click **Replace selected slot**.
+4. Each track appears once in the track catalog; search uses the track name and ID. Select a track, choose a layout in its details panel and click **Use this track**. You can also change the current track's layout directly in **Overview**. The preview and pit box count update immediately; server changes take effect after saving and restarting.
+5. Check the settings and save. Missing `data.acd`, `surfaces.ini`, `.ai` and `.aip` files are copied from the game to the server. Existing files are not overwritten.
+6. Start the server. The manager checks ports, displays logs and checks the HTTP `/INFO` response. **Connect** opens the local server directly in CM without using the acstuff.ru website.
 
-После установки новых модов нажмите **Обновить каталог** на вкладке каталога. Черновик сервера сохраняется. Поисковые поля подсказывают, что можно искать; общая памятка находится под каталогом на всю ширину. Бегунок прокрутки сохраняет минимальный размер даже в большом каталоге. В таблице слотов видны границы столбцов и строк. ID контента сравниваются без учёта регистра, как пути Windows; описания модов с буквальными переносами строк читаются без изменения исходных JSON-файлов.
+After installing new mods, click **Refresh catalog** on the catalog tab. The server draft is preserved. Search fields include hints about what you can search for; the general guidance spans the width below the catalog. Scrollbar thumbs retain a minimum size even in a large catalog. The slot table displays row and column borders. Content IDs are compared without regard to case, matching Windows path behavior; mod descriptions containing literal line breaks are read without modifying the original JSON files.
 
-**Проверка** сравнивает содержимое `data.acd` установленных машин с архивами сервера и сообщает о распакованных данных без `data.acd`, даже если старый архив уже есть на сервере. Также сравнивает `surfaces.ini` и `models_<вариант>.ini` трассы. Отличия показываются как замечания: CSP может требовать специально изменённые серверные файлы. Существующий контент автоматически не заменяется; после синхронизации нужен перезапуск сервера.
+**Validation** compares installed cars' `data.acd` files with the server copies and reports unpacked data without a `data.acd`, even if an old archive is already present on the server. It also compares the track's `surfaces.ini` and `models_<layout>.ini` files. Differences are reported as findings because CSP may require specially modified server files. Existing content is not replaced automatically; restart the server after synchronizing it.
 
-Если сервер запущен старым менеджером, к нему можно подключиться из новой версии. Для управления процессом сначала остановите его в старом менеджере и запустите в новом. Не запускайте одновременно серверы с одинаковыми портами. Менеджер останавливает только собственные процессы; при закрытии предлагает их завершить.
+If a server was started by an older manager, you can connect to it from the new version. To manage its process, stop it in the old manager and start it in the new one. Do not run servers with conflicting ports simultaneously. The manager only stops its own processes and offers to terminate them when closing.
 
-В списке серверов и заголовке выбранного профиля отображаются статусы: **Остановлен**, **Запускается…**, **Запущен**, **Запущен вне менеджера**. Статусы обновляются каждые три секунды. Для внешнего запуска процесс AssettoServer сопоставляется с папкой EXE; одинаковые порты не определяют принадлежность процесса. В подсказке указан PID. Если путь процесса недоступен, отображается **Статус недоступен**. Статус процесса не подтверждает доступность сервера из интернета. Остановить внешние процессы из этого менеджера нельзя.
+The server list and selected profile header display **Stopped**, **Starting…**, **Running** or **Running externally**. Status updates every three seconds. For external launches, the AssettoServer process is matched to the executable's folder; matching port numbers do not determine which profile owns a process. The tooltip shows its PID. If the process path cannot be accessed, **Status unavailable** is displayed. Process status does not confirm internet accessibility. This manager cannot stop external processes.
 
-## Сохранение и восстановление
+## Saving and recovery
 
-Перед записью копирует три конфига в `<сервер>/backups/<дата-время-id>/`. Заменяемые файлы контента тоже попадают в бэкап. Неизвестные настройки, YAML-документы плагинов, GUID и другие поля слотов сохраняются. В дубликате очищаются GUID, имя водителя и команда.
+Before writing, the manager copies the three configuration files to `<server>/backups/<date-time-id>/`. Content files being replaced are also backed up. Unknown settings, plugin YAML documents, GUIDs and other slot fields are preserved. Duplicated slots have their GUID, driver name and team cleared.
 
-При удалении слотов `CARS` пересобирается по оставшимся машинам, секции перенумеровываются. Запись блокируется, если конфиги были изменены после загрузки. Сначала готовит все файлы, затем заменяет; при ошибке восстанавливает записанные файлы. Отключение питания в середине операции не покрывается.
+When slots are removed, `CARS` is rebuilt from the remaining cars and the sections are renumbered. Saving is blocked if the configurations have changed since they were loaded. All files are prepared before replacement; if an error occurs, files already written are restored. Recovery from a power failure during the operation is not covered.
 
-Сохранение не перезапускает сервер. Для восстановления остановите его и скопируйте конфиги из бэкапа в `cfg`; при необходимости восстановите контент.
+Saving does not restart the server. To restore a backup, stop the server and copy the backed-up configurations into `cfg`; restore content files as needed.
 
-## Отложено
+## Deferred features
 
-Создание новых серверов и установка AssettoServer; упаковка распакованных данных в `data.acd`; обновление существующего серверного контента; подробные формы погоды, AI и плагинов; проброс портов и внешняя диагностика. Наличие AI-файлов не подтверждает их пригодность для трафика.
+New server creation and AssettoServer installation; packing unpacked data into `data.acd`; updating existing server content; detailed weather, AI and plugin forms; port forwarding and external diagnostics. The presence of AI files does not confirm their suitability for traffic.
 
-## Проверки
+## Validation
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tests
@@ -57,4 +57,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tes
 .\artifacts\desktop\AssettoServerManager.exe --window-qa .\artifacts\window-qa
 ```
 
-Тесты ядра используют временные серверы и проверяют сообщения на обоих языках, перестановку с сохранением полей и чтение метаданных модов. Smoke test читает реальные профили и каталог, проверяет действия интерфейса в памяти, переключение RU / EN с сохранением черновика и совместимость настроек языка. Рендерит PNG на обоих языках. `--window-qa` дополнительно показывает тестовое окно, проверяет реальное разворачивание/восстановление, границы контента и результаты кнопок модального диалога. Рабочие конфиги не записывает и серверы не запускает. Сборка использует локальный SDK либо SDK из PATH.
+Core tests use temporary servers and check messages in both languages, slot reordering with field preservation, and mod metadata parsing. The smoke test reads real profiles and the catalog, exercises UI actions in memory, checks RU / EN switching while preserving drafts, and verifies language settings compatibility. It renders PNG screenshots in both languages. `--window-qa` additionally shows a test window, checks actual maximize/restore behavior, content bounds and modal dialog button results. These checks do not write live configurations or start servers. The build uses the local SDK or an SDK from PATH.

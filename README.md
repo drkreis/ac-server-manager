@@ -1,77 +1,77 @@
 # AC Server Manager
 
-**v0.3 · Preview** — приложение Windows для настройки существующих локальных серверов [AssettoServer](https://assettoserver.org/). Основной сценарий — свободная езда с друзьями и AI-трафик.
+**v0.3 · Preview** is a Windows application for configuring existing local [AssettoServer](https://assettoserver.org/) installations. Its main use case is free roam with friends and AI traffic.
 
-Интерфейс на русском и английском. Приложение написано на C# / WPF / .NET 10.
+The interface is available in Russian and English. The application is built with C#, WPF and .NET 10.
 
-## Возможности
+## Features
 
-- Поиск серверов и импорт `server_cfg.ini`, `entry_list.ini`, `extra_cfg.yml`.
-- Настройки трассы, варианта, пароля, портов, слотов, AI и WeatherFX.
-- Каталог установленных машин и трасс с превью; варианты выбираются в карточке трассы.
-- Добавление, замена, дублирование, удаление и перестановка слотов; выбор скина и роли.
-- Проверка наличия контента и различий файлов между игрой и сервером.
-- Запуск, остановка и журнал; статусы всех обнаруженных серверов, включая внешний запуск.
-- Открытие Content Manager и подключение к локальному серверу.
-- Резервные копии перед сохранением, сохранение неизвестных полей конфигов и защита от записи поверх чужих изменений.
+- Server discovery and import of `server_cfg.ini`, `entry_list.ini` and `extra_cfg.yml`.
+- Track, layout, password, port, slot, AI and WeatherFX settings.
+- A catalog of installed cars and tracks with previews; layouts are selected in the track details panel.
+- Add, replace, duplicate, delete and reorder slots; choose skins and slot roles.
+- Checks for missing content and file differences between the game and the server.
+- Server start, stop and logs; status indicators for all discovered servers, including those started outside the manager.
+- Open Content Manager and connect to a local server.
+- Backups before saving, preservation of unknown configuration fields and protection against overwriting changes made by another application.
 
-Подробности и ограничения операций: [DESKTOP.md](DESKTOP.md).
+See the [user guide](DESKTOP.md) for details and limitations.
 
-## Скачать готовую программу
+## Download the application
 
-В [Releases](https://github.com/drkreis/ac-server-manager/releases) скачайте `ACServerManager-0.3.0-preview-win-x64.zip`, распакуйте **весь архив** в доступную для записи папку и запустите `AssettoServerManager.exe`. Это переносимая сборка для Windows x64 со встроенным .NET; устанавливать SDK или Runtime не требуется. Сохраняйте остальные файлы рядом с EXE.
+Download `ACServerManager-0.3.0-preview-win-x64.zip` from [Releases](https://github.com/drkreis/ac-server-manager/releases), extract the **entire archive** into a writable folder and run `AssettoServerManager.exe`. This is a portable Windows x64 build with .NET included; no separate SDK or Runtime installation is required. Keep the other files alongside the EXE.
 
-При первом запуске выберите папку серверов и корневую папку Assetto Corsa. Для подключения потребуется установленный Content Manager; путь к нему можно указать в приложении. Игра, Content Manager, AssettoServer и моды в архив не входят.
+On first launch, select your server folder and the Assetto Corsa installation folder. Content Manager is required for the Connect action; you can set its path in the application. The game, Content Manager, AssettoServer and mods are not included in the archive.
 
-## Сборка из исходников
+## Build from source
 
-Для сборки на Windows нужен **.NET 10 SDK** из [официального установщика Microsoft](https://learn.microsoft.com/en-us/dotnet/core/install/windows). SDK включает Desktop Runtime. Обычная сборка через `Build-Desktop.ps1` требует .NET 10 Desktop Runtime x64 на машине, где её запускают; архив из Releases уже содержит Runtime.
+Building on Windows requires the **.NET 10 SDK**, available through [Microsoft's official installation instructions](https://learn.microsoft.com/en-us/dotnet/core/install/windows). The SDK includes the Desktop Runtime. A regular build produced by `Build-Desktop.ps1` requires the .NET 10 Desktop Runtime x64 on the machine running it; the archive from Releases already includes the Runtime.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tests
 ```
 
-Результат находится в `artifacts/desktop/`. Запустите `Start-Manager.cmd` или `AssettoServerManager.exe` из этой папки. DLL и остальные файлы сборки должны оставаться рядом с EXE.
+The output is placed in `artifacts/desktop/`. Run `Start-Manager.cmd` from the project root or `AssettoServerManager.exe` from the output folder. Keep the DLLs and other build files alongside the EXE.
 
-Скрипт использует SDK из `.tools/dotnet`, если он установлен локально, иначе `dotnet` из PATH. Visual Studio для сборки не требуется.
+The script uses the local SDK in `.tools/dotnet` if available, otherwise `dotnet` from PATH. Visual Studio is not required.
 
-Чтобы собрать переносимый архив, выполните:
+To create a portable archive, run:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Publish-Desktop.ps1
 ```
 
-Скрипт запускает тесты ядра, публикует приложение для Windows x64 вместе с .NET, добавляет руководство и лицензии, создаёт ZIP и файл SHA-256 в `artifacts/release/`. При первом запуске ему нужен доступ к NuGet для загрузки Runtime.
+The script runs the core tests, publishes the Windows x64 application with .NET included, adds the guide and licenses, and creates a ZIP archive and SHA-256 checksum file in `artifacts/release/`. The first run needs access to NuGet to download the Runtime.
 
-## Проверки
+## Validation
 
-`Build-Desktop.ps1 -Tests` собирает приложение и запускает тесты ядра на временных данных. Игра и серверы для этих тестов не нужны.
+`Build-Desktop.ps1 -Tests` builds the application and runs core tests using temporary data. These tests do not require the game or any server installations.
 
-Дополнительные проверки интерфейса используют локальные установки игры и серверов:
+Additional UI checks use local game and server installations:
 
 ```powershell
 .\artifacts\desktop\AssettoServerManager.exe --smoke .\artifacts\qa
 .\artifacts\desktop\AssettoServerManager.exe --window-qa .\artifacts\window-qa
 ```
 
-Они читают каталог и конфиги, проверяют черновики в памяти и создают PNG. Рабочие конфиги не записывают и серверы не запускают. На чистой машине без игрового контента эти проверки не рассчитаны.
+These checks read the catalog and configurations, exercise drafts in memory and generate PNG screenshots. They do not write live configurations or start servers. They are not intended for a clean machine without game content.
 
-При отправке изменений и создании pull request [GitHub Actions](.github/workflows/build.yml) собирает приложение на Windows и запускает тесты ядра. Проверки интерфейса с игровым контентом выполняются локально.
+On pushes and pull requests, [GitHub Actions](.github/workflows/build.yml) runs the core tests and builds the portable Windows package. UI checks that require game content are performed locally.
 
-## Структура
+## Project structure
 
-- `src/ServerManager.App/` — WPF-интерфейс и управление процессами.
-- `src/ServerManager.Core/` — конфиги, каталог и переводы.
-- `tests/ServerManager.Core.Tests/` — тесты ядра.
-- `Build-Desktop.ps1` — сборка; `Publish-Desktop.ps1` — переносимый архив; `Start-Manager.cmd` — запуск локальной сборки.
-- `DESKTOP.md` — руководство пользователя.
+- `src/ServerManager.App/` — WPF interface and process management.
+- `src/ServerManager.Core/` — configurations, catalog and translations.
+- `tests/ServerManager.Core.Tests/` — core tests.
+- `Build-Desktop.ps1` — regular build; `Publish-Desktop.ps1` — portable archive; `Start-Manager.cmd` — launch a local build.
+- `DESKTOP.md` — user guide.
 
-SDK, сборки, настройки, логи, бэкапы, серверные конфиги и игровой контент исключены через `.gitignore`. Старый прототип и промежуточные результаты перенесены в локальную папку `.local-archive/`, которая также не входит в Git.
+The SDK, builds, settings, logs, backups, server configurations and game content are excluded by `.gitignore`. The old prototype and intermediate outputs were moved to the local `.local-archive/` folder, which is also excluded from Git.
 
-## Статус Preview
+## Preview status
 
-Версия проверена на локальной установке Windows 11 x64. Это ранняя версия для существующих серверов: пока нет мастера создания сервера, установки AssettoServer, полного редактора погоды/AI/плагинов, проброса портов и внешней проверки доступности.
+This version has been tested on a local Windows 11 x64 installation. It is an early version for existing servers: server creation, AssettoServer installation, a complete weather/AI/plugin editor, port forwarding and external connectivity checks are not available yet.
 
-Сохранение настроек требует перезапуска сервера для применения. Закрытие менеджера предлагает завершить запущенные им серверы. Текущая остановка завершает процесс принудительно.
+Saved configuration changes require a server restart to take effect. Closing the manager prompts you to terminate servers it started. The current Stop action forcibly terminates the process.
 
-Приложение является независимым проектом и распространяется под [лицензией MIT](LICENSE). Включённый в релиз .NET распространяется по собственным условиям; тексты лицензий и уведомлений находятся в папке `licenses/` архива.
+This is an independent project distributed under the [MIT license](LICENSE). The .NET components bundled with the release are distributed under their own terms; their license texts and notices are included in the archive's `licenses/` folder.
