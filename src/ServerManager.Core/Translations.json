@@ -1,0 +1,630 @@
+{
+  "L001": {
+    "Ru": "Свернуть",
+    "En": "Minimize"
+  },
+  "L002": {
+    "Ru": "Свернуть окно",
+    "En": "Minimize window"
+  },
+  "L003": {
+    "Ru": "Развернуть / восстановить",
+    "En": "Maximize / restore"
+  },
+  "L004": {
+    "Ru": "Развернуть или восстановить окно",
+    "En": "Maximize or restore window"
+  },
+  "L005": {
+    "Ru": "Закрыть",
+    "En": "Close"
+  },
+  "L006": {
+    "Ru": "Закрыть окно",
+    "En": "Close window"
+  },
+  "L007": {
+    "Ru": "Папка серверов",
+    "En": "Servers folder"
+  },
+  "L008": {
+    "Ru": "Папка Assetto Corsa",
+    "En": "Assetto Corsa folder"
+  },
+  "L009": {
+    "Ru": "Выбрать",
+    "En": "Browse"
+  },
+  "L010": {
+    "Ru": "СЕРВЕРЫ",
+    "En": "SERVERS"
+  },
+  "L011": {
+    "Ru": "Существующие серверы\nAssettoServer · Freeroam",
+    "En": "Existing servers\nAssettoServer · Freeroam"
+  },
+  "L012": {
+    "Ru": "Выберите сервер",
+    "En": "Select a server"
+  },
+  "L013": {
+    "Ru": "Остановлен",
+    "En": "Stopped"
+  },
+  "L014": {
+    "Ru": "Обзор",
+    "En": "Overview"
+  },
+  "L015": {
+    "Ru": "ТРАССА И ВАРИАНТ",
+    "En": "TRACK AND LAYOUT"
+  },
+  "L016": {
+    "Ru": "Выбрать трассу из каталога →",
+    "En": "Choose a track from the catalog →"
+  },
+  "L017": {
+    "Ru": "Название",
+    "En": "Name"
+  },
+  "L018": {
+    "Ru": "ID трассы",
+    "En": "Track ID"
+  },
+  "L019": {
+    "Ru": "Общий лимит слотов",
+    "En": "Total slot limit"
+  },
+  "L020": {
+    "Ru": "По числу машин",
+    "En": "Match slot count"
+  },
+  "L021": {
+    "Ru": "ID варианта",
+    "En": "Layout ID"
+  },
+  "L022": {
+    "Ru": "Пароль входа",
+    "En": "Join password"
+  },
+  "L023": {
+    "Ru": "AI трафик",
+    "En": "AI traffic"
+  },
+  "L024": {
+    "Ru": "Публикация в lobby",
+    "En": "Publish to lobby"
+  },
+  "L025": {
+    "Ru": "СЕТЬ",
+    "En": "NETWORK"
+  },
+  "L026": {
+    "Ru": "РАСХОД И ПОВРЕЖДЕНИЯ · %",
+    "En": "CONSUMPTION AND DAMAGE · %"
+  },
+  "L027": {
+    "Ru": "Топливо",
+    "En": "Fuel"
+  },
+  "L028": {
+    "Ru": "Повреждения",
+    "En": "Damage"
+  },
+  "L029": {
+    "Ru": "Износ шин",
+    "En": "Tyre wear"
+  },
+  "L030": {
+    "Ru": "Машины и слоты",
+    "En": "Cars and slots"
+  },
+  "L031": {
+    "Ru": "+ Из каталога",
+    "En": "+ From catalog"
+  },
+  "L032": {
+    "Ru": "Все",
+    "En": "All"
+  },
+  "L033": {
+    "Ru": "Игроки",
+    "En": "Players"
+  },
+  "L034": {
+    "Ru": "Трафик",
+    "En": "Traffic"
+  },
+  "L035": {
+    "Ru": "Дублировать",
+    "En": "Duplicate"
+  },
+  "L036": {
+    "Ru": "Удалить",
+    "En": "Remove"
+  },
+  "L037": {
+    "Ru": "Модель",
+    "En": "Model"
+  },
+  "L038": {
+    "Ru": "Скин",
+    "En": "Skin"
+  },
+  "L039": {
+    "Ru": "Назначение",
+    "En": "Role"
+  },
+  "L040": {
+    "Ru": "none — игрок · fixed — только трафик · auto — AI в свободном слоте.\nДобавление машин обновит лимит слотов; модель выбирается в каталоге.\nНомера CAR_n соответствуют секциям entry_list.ini при сохранении.",
+    "En": "none — player · fixed — traffic only · auto — AI uses an empty slot.\nAdding cars updates the slot limit; choose models in the catalog.\nCAR_n numbers match entry_list.ini sections when saved."
+  },
+  "L041": {
+    "Ru": "Каталог",
+    "En": "Catalog"
+  },
+  "L042": {
+    "Ru": "Машины",
+    "En": "Cars"
+  },
+  "L043": {
+    "Ru": "Поиск по названию, бренду и ID",
+    "En": "Search by name, brand or ID"
+  },
+  "L044": {
+    "Ru": "Выберите машину",
+    "En": "Select a car"
+  },
+  "L045": {
+    "Ru": "Назначение нового слота",
+    "En": "New slot role"
+  },
+  "L046": {
+    "Ru": "Игрок",
+    "En": "Player"
+  },
+  "L047": {
+    "Ru": "Игрок / AI",
+    "En": "Player / AI"
+  },
+  "L048": {
+    "Ru": "+ Добавить слот",
+    "En": "+ Add slot"
+  },
+  "L049": {
+    "Ru": "Заменить выбранный слот",
+    "En": "Replace selected slot"
+  },
+  "L050": {
+    "Ru": "Недостающий data.acd будет скопирован из игры при сохранении. Установленные файлы сервера не перезаписываются.",
+    "En": "Missing data.acd files are copied from the game when you save. Existing server files are preserved."
+  },
+  "L051": {
+    "Ru": "Трассы",
+    "En": "Tracks"
+  },
+  "L052": {
+    "Ru": "Название трассы или ID",
+    "En": "Track name or ID"
+  },
+  "L053": {
+    "Ru": "Выберите трассу",
+    "En": "Select a track"
+  },
+  "L054": {
+    "Ru": "Использовать эту трассу",
+    "En": "Use this track"
+  },
+  "L055": {
+    "Ru": "Недостающие surfaces.ini и AI-файлы будут подготовлены при сохранении. Совместимость трафика зависит от AI конкретной трассы.",
+    "En": "Missing surfaces.ini and AI files are prepared when you save. Traffic compatibility depends on the track’s AI files."
+  },
+  "L056": {
+    "Ru": "Проверка",
+    "En": "Validation"
+  },
+  "L057": {
+    "Ru": "Проверить конфиги и контент",
+    "En": "Validate configs and content"
+  },
+  "L058": {
+    "Ru": "Журнал",
+    "En": "Log"
+  },
+  "L059": {
+    "Ru": "Вывод сервера, запущенного этим менеджером",
+    "En": "Output of the server started by this manager"
+  },
+  "L060": {
+    "Ru": "Сохранить",
+    "En": "Save"
+  },
+  "L061": {
+    "Ru": "Перечитать",
+    "En": "Reload"
+  },
+  "L062": {
+    "Ru": "▶ Запустить",
+    "En": "▶ Start"
+  },
+  "L063": {
+    "Ru": "■ Остановить",
+    "En": "■ Stop"
+  },
+  "L064": {
+    "Ru": "Подключиться ↗",
+    "En": "Connect ↗"
+  },
+  "L065": {
+    "Ru": "Загрузка…",
+    "En": "Loading…"
+  },
+  "L066": {
+    "Ru": "Язык интерфейса",
+    "En": "Interface language"
+  },
+  "L067": {
+    "Ru": "По умолчанию",
+    "En": "Default"
+  },
+  "L068": {
+    "Ru": "Не удалось прочитать настройки приложения: ",
+    "En": "Could not read app settings: "
+  },
+  "L069": {
+    "Ru": "Читаю установленный контент…",
+    "En": "Reading installed content…"
+  },
+  "L070": {
+    "Ru": "Укажите папку игры для каталога.",
+    "En": "Choose your game folder to load the catalog."
+  },
+  "L071": {
+    "Ru": "Каталог: {0} машин · {1} вариантов трасс · замечаний к метаданным: {2}",
+    "En": "Catalog: {0} cars · {1} track layouts · metadata issues: {2}"
+  },
+  "L072": {
+    "Ru": "Найдено {0}",
+    "En": "Found {0}"
+  },
+  "L073": {
+    "Ru": "Проверка охватывает конфиги и установленный контент. Доступность из интернета проверяется отдельно.",
+    "En": "Validation covers configs and installed content. Internet access must be checked separately."
+  },
+  "L074": {
+    "Ru": "Загружен ",
+    "En": "Loaded "
+  },
+  "L075": {
+    "Ru": "Есть несохранённые изменения",
+    "En": "Unsaved changes"
+  },
+  "L076": {
+    "Ru": "Отбросить несохранённые изменения?",
+    "En": "Discard unsaved changes?"
+  },
+  "L077": {
+    "Ru": "Настройки",
+    "En": "Settings"
+  },
+  "L078": {
+    "Ru": " · всего {0} слотов",
+    "En": " · {0} slots in total"
+  },
+  "L079": {
+    "Ru": "{0} игроков / {1} AI",
+    "En": "{0} players / {1} AI"
+  },
+  "L080": {
+    "Ru": " · нет в каталоге игры",
+    "En": " · not found in the game catalog"
+  },
+  "L081": {
+    "Ru": " · {0} пит-боксов",
+    "En": " · {0} pit boxes"
+  },
+  "L082": {
+    "Ru": "Папка серверов или один сервер",
+    "En": "Servers folder or an individual server"
+  },
+  "L083": {
+    "Ru": "Корневая папка Assetto Corsa",
+    "En": "Assetto Corsa root folder"
+  },
+  "L084": {
+    "Ru": "Настройки приложения не сохранены: ",
+    "En": "App settings could not be saved: "
+  },
+  "L085": {
+    "Ru": "Выберите сервер.",
+    "En": "Select a server."
+  },
+  "L086": {
+    "Ru": "Каталог не загружен: наличие контента в игре не проверено.",
+    "En": "Catalog is not loaded: installed game content has not been checked."
+  },
+  "L087": {
+    "Ru": "✓ Проблем по выполненным проверкам не найдено.",
+    "En": "✓ No issues found by these checks."
+  },
+  "L088": {
+    "Ru": "\n\nПри сохранении будет подготовлено {0} недостающих файлов.\nПроверка не подтверждает доступность из интернета и совместимость модов с клиентами друзей.",
+    "En": "\n\nSaving will prepare {0} missing files.\nThese checks do not confirm internet access or mod compatibility with your friends’ clients."
+  },
+  "L089": {
+    "Ru": "\n\nЗамечания к метаданным каталога:\n",
+    "En": "\n\nCatalog metadata issues:\n"
+  },
+  "L090": {
+    "Ru": "Проверка завершена",
+    "En": "Validation complete"
+  },
+  "L091": {
+    "Ru": "\n\nСохранить несмотря на замечания?",
+    "En": "\n\nSave despite these warnings?"
+  },
+  "L092": {
+    "Ru": "Сохраняю конфиги и готовлю серверные данные…",
+    "En": "Saving configs and preparing server data…"
+  },
+  "L093": {
+    "Ru": "Сохранено · подготовлено {0} файлов · бэкап: {1} · для применения нужен перезапуск сервера",
+    "En": "Saved · {0} files prepared · backup: {1} · restart the server to apply changes"
+  },
+  "L094": {
+    "Ru": "Достигнут предел 255 слотов.",
+    "En": "The limit of 255 slots has been reached."
+  },
+  "L095": {
+    "Ru": "Оставьте хотя бы один слот.",
+    "En": "Keep at least one slot."
+  },
+  "L096": {
+    "Ru": "\n{0} скинов",
+    "En": "\n{0} skins"
+  },
+  "L097": {
+    "Ru": "Добавлен слот: ",
+    "En": "Slot added: "
+  },
+  "L098": {
+    "Ru": ". Сохраните изменения.",
+    "En": ". Save your changes."
+  },
+  "L099": {
+    "Ru": "Выберите слот на вкладке машин, затем модель в каталоге.",
+    "En": "Select a slot on the cars tab, then choose a model in the catalog."
+  },
+  "L100": {
+    "Ru": "Модель слота заменена. Сохраните изменения.",
+    "En": "Slot model replaced. Save your changes."
+  },
+  "L101": {
+    "Ru": "\n{0} пит-боксов",
+    "En": "\n{0} pit boxes"
+  },
+  "L102": {
+    "Ru": "● Запущен менеджером",
+    "En": "● Started by the manager"
+  },
+  "L103": {
+    "Ru": "Не запущен менеджером",
+    "En": "Not started by the manager"
+  },
+  "L104": {
+    "Ru": "Сначала сохраните изменения или перечитайте конфигурацию.",
+    "En": "Save your changes or reload the configuration first."
+  },
+  "L105": {
+    "Ru": "Порт сервера уже занят. Возможно, работает старый менеджер или другая установка.",
+    "En": "A server port is already in use. Another manager or server may be running."
+  },
+  "L106": {
+    "Ru": "Процесс запущен; ожидаю ответа HTTP…",
+    "En": "Process started; waiting for an HTTP response…"
+  },
+  "L107": {
+    "Ru": "● Сервер отвечает",
+    "En": "● Server responding"
+  },
+  "L108": {
+    "Ru": "Сервер готов локально. Нажмите «Подключиться».",
+    "En": "Server is ready locally. Click Connect."
+  },
+  "L109": {
+    "Ru": "Процесс работает, но HTTP пока не ответил. Проверьте журнал.",
+    "En": "The process is running, but HTTP has not responded. Check the log."
+  },
+  "L110": {
+    "Ru": "$1[скрыто]",
+    "En": "$1[hidden]"
+  },
+  "L111": {
+    "Ru": "Процесс завершён, код ",
+    "En": "Process exited, code "
+  },
+  "L112": {
+    "Ru": "Сервер остановлен",
+    "En": "Server stopped"
+  },
+  "L113": {
+    "Ru": "На этом порту отвечает другая трасса. Выберите соответствующий сервер.",
+    "En": "A different track is responding on this port. Select the corresponding server."
+  },
+  "L114": {
+    "Ru": "Выберите Content Manager.exe",
+    "En": "Select Content Manager.exe"
+  },
+  "L115": {
+    "Ru": "Локальный сервер открыт в Content Manager",
+    "En": "Local server opened in Content Manager"
+  },
+  "L116": {
+    "Ru": "Закрытие остановит серверы, запущенные этим менеджером. Закрыть?",
+    "En": "Closing will stop servers started by this manager. Close anyway?"
+  },
+  "L117": {
+    "Ru": "Работающие серверы",
+    "En": "Running servers"
+  },
+  "L118": {
+    "Ru": "Выберите корневую папку Assetto Corsa с content/cars и content/tracks.",
+    "En": "Choose the Assetto Corsa root folder containing content/cars and content/tracks."
+  },
+  "L119": {
+    "Ru": "Не найдены данные выбранной трассы в игре и на сервере.",
+    "En": "Selected track data was not found in the game or on the server."
+  },
+  "L120": {
+    "Ru": "У трассы {0} пит-боксов; слотов {1}. Проверьте допустимое число машин.",
+    "En": "The track has {0} pit boxes and the server has {1} slots. Check the allowed car count."
+  },
+  "L121": {
+    "Ru": "В игре отсутствует машина: ",
+    "En": "Car missing from the game: "
+  },
+  "L122": {
+    "Ru": "Нет скина {0} у {1}.",
+    "En": "Skin {0} is missing for {1}."
+  },
+  "L123": {
+    "Ru": "Нет data.acd для сервера: ",
+    "En": "No server data.acd for: "
+  },
+  "L124": {
+    "Ru": ". Упаковка распакованных данных пока не поддерживается.",
+    "En": ". Packing unpacked car data is not yet supported."
+  },
+  "L125": {
+    "Ru": "Трафик включён, но файлы AI не найдены.",
+    "En": "Traffic is enabled, but no AI files were found."
+  },
+  "L126": {
+    "Ru": "Нет машин для игроков: все слоты заняты трафиком.",
+    "En": "There are no player cars: all slots are reserved for traffic."
+  },
+  "L127": {
+    "Ru": "{0}: перенос строки недопустим.",
+    "En": "{0}: line breaks are not allowed."
+  },
+  "L128": {
+    "Ru": "Повторяющийся YAML-параметр: {0}",
+    "En": "Duplicate YAML parameter: {0}"
+  },
+  "L129": {
+    "Ru": "Добавление ключа в многодокументный YAML пока не поддерживается.",
+    "En": "Adding a key to multi-document YAML is not yet supported."
+  },
+  "L130": {
+    "Ru": "{0} игроков · {1} AI",
+    "En": "{0} players · {1} AI"
+  },
+  "L131": {
+    "Ru": "Повторяющиеся секции CAR_n.",
+    "En": "Duplicate CAR_n sections."
+  },
+  "L132": {
+    "Ru": "Папка серверов не найдена.",
+    "En": "Servers folder not found."
+  },
+  "L133": {
+    "Ru": "Нужно от 1 до 255 слотов.",
+    "En": "Between 1 and 255 slots are required."
+  },
+  "L134": {
+    "Ru": "{0} не может быть пустым.",
+    "En": "{0} cannot be empty."
+  },
+  "L135": {
+    "Ru": "{0}: допустимо {1}–{2}.",
+    "En": "{0}: allowed range is {1}–{2}."
+  },
+  "L136": {
+    "Ru": "Лимит слотов меньше количества машин. Нажмите «По числу машин».",
+    "En": "The slot limit is lower than the number of cars. Click Match slot count."
+  },
+  "L137": {
+    "Ru": "Некорректный ID модели: ",
+    "En": "Invalid model ID: "
+  },
+  "L138": {
+    "Ru": "Неизвестная роль AI.",
+    "En": "Unknown AI role."
+  },
+  "L139": {
+    "Ru": "Файлы изменились после открытия. Перечитайте сервер.",
+    "En": "Files changed after opening. Reload the server."
+  },
+  "L140": {
+    "Ru": "Некорректный путь серверного контента.",
+    "En": "Invalid server content path."
+  },
+  "L142": {
+    "Ru": "Готов",
+    "En": "Ready"
+  },
+  "L143": {
+    "En": "Cancel",
+    "Ru": "Отмена"
+  },
+  "L144": {
+    "En": "Discard",
+    "Ru": "Отбросить"
+  },
+  "L151": {
+    "En": "Slot order changed. Save your changes.",
+    "Ru": "Порядок слотов изменён. Сохраните изменения."
+  },
+  "L150": {
+    "En": "Refresh catalog",
+    "Ru": "Обновить каталог"
+  },
+  "L147": {
+    "En": "↑ Move up",
+    "Ru": "↑ Выше"
+  },
+  "L148": {
+    "En": "↓ Move down",
+    "Ru": "↓ Ниже"
+  },
+  "L146": {
+    "En": "Error",
+    "Ru": "Ошибка"
+  },
+  "L145": {
+    "En": "OK",
+    "Ru": "Понятно"
+  },
+  "WarnUnpackedCar": {
+    "Ru": "У {0} в игре распакованная папка data без data.acd. Упакуйте данные в Content Manager и скопируйте новый data.acd на сервер; сервер проверяет архив data.acd, а не папку data.",
+    "En": "{0} has an unpacked data folder without data.acd in the game. Pack the data in Content Manager and copy the new data.acd to the server; the server checks the data.acd archive rather than the data folder."
+  },
+  "WarnCarChecksumMismatch": {
+    "Ru": "Не совпадает data.acd машины {0} в игре и на сервере. Синхронизируйте версии и перезапустите сервер; иначе подключение может завершиться ошибкой проверки файлов.",
+    "En": "The game and server data.acd files differ for {0}. Sync the versions and restart the server to avoid file verification errors when joining."
+  },
+  "WarnTrackChecksumMismatch": {
+    "Ru": "Не совпадает файл трассы {0} в игре и на сервере. Проверьте версии трассы и настройки CSP перед синхронизацией.",
+    "En": "The game and server track file {0} differ. Check track versions and CSP settings before syncing."
+  },
+  "OpenContentManager": { "Ru": "Открыть Content Manager", "En": "Open Content Manager" },
+  "ContentManagerOpened": { "Ru": "Content Manager открыт", "En": "Content Manager opened" },
+  "SearchCarsPlaceholder": { "Ru": "Поиск машин: название, марка или ID…", "En": "Search cars by name, brand or ID…" },
+  "SearchTracksPlaceholder": { "Ru": "Поиск трасс: название или ID…", "En": "Search tracks by name or ID…" },
+  "TrackLayoutLabel": { "Ru": "Вариант трассы", "En": "Track layout" },
+  "NoTrackLayouts": { "Ru": "Варианты не найдены в каталоге игры", "En": "No layouts found in the game catalog" },
+  "SingleTrackLayout": { "Ru": "У этой трассы один установленный вариант", "En": "This track has one installed layout" },
+  "CatalogIntro": { "Ru": "Установленные машины и трассы", "En": "Installed cars and tracks" },
+  "CatalogHint": { "Ru": "Добавляйте машины в слоты и выбирайте варианты трасс. При сохранении будут подготовлены недостающие серверные данные; существующие файлы не заменяются.", "En": "Add cars to slots and choose track layouts. Saving prepares missing server data; existing files are kept." },
+  "ServerStarting": { "Ru": "Запускается…", "En": "Starting…" },
+  "ServerRunning": { "Ru": "Запущен", "En": "Running" },
+  "ServerExternal": { "Ru": "Запущен вне менеджера", "En": "Running externally" },
+  "ServerUnknown": { "Ru": "Статус недоступен", "En": "Status unavailable" },
+  "ServerChecking": { "Ru": "Проверяю статус…", "En": "Checking status…" },
+  "ExternalServerHint": { "Ru": "\nПроцесс запущен отдельно. Остановите его в исходном окне или менеджере.", "En": "\nThis process was started separately. Stop it in its original window or manager." },
+  "UnknownServerHint": { "Ru": "\nНе удалось прочитать путь одного из процессов сервера.", "En": "\nCould not read the executable path of a server process." },
+  "L149": {
+    "En": "Slot",
+    "Ru": "Слот"
+  }
+}

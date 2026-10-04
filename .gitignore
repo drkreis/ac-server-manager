@@ -1,0 +1,33 @@
+# Local SDK, archives and generated builds
+/.tools/
+/.local-archive/
+/artifacts/
+**/bin/
+**/obj/
+tests/scratch-*/
+.vs/
+.idea/
+*.user
+*.suo
+*.tmp
+*.log
+/preview.png
+
+# Machine-specific settings and credentials
+settings.json
+.env
+.env.*
+*.pfx
+*.p12
+*.pem
+
+# Server installations, configuration and game/mod data
+**/cfg/
+**/backups/
+**/content/
+server_cfg.ini
+entry_list.ini
+extra_cfg.yml
+data.acd
+*.kn5
+*.bank

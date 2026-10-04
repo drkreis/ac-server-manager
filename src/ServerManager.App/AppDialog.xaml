@@ -1,0 +1,24 @@
+<Window x:Class="ServerManager.App.AppDialog"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+ Width="540" SizeToContent="Height" ResizeMode="NoResize" WindowStyle="SingleBorderWindow"
+ ShowInTaskbar="False" WindowStartupLocation="CenterOwner"
+ Background="{StaticResource Bg}" Foreground="#EDEFF4" FontFamily="Bahnschrift" FontSize="14"
+ TextOptions.TextFormattingMode="Display" KeyDown="DialogKeyDown">
+ <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="68" ResizeBorderThickness="0" GlassFrameThickness="0" UseAeroCaptionButtons="False"/></shell:WindowChrome.WindowChrome>
+ <Border BorderBrush="#343A48" BorderThickness="1" Padding="24">
+  <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+   <Grid Margin="0,0,0,22"><Grid.ColumnDefinitions><ColumnDefinition Width="42"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+    <Border Background="#30251F" CornerRadius="5" Width="30" Height="30" HorizontalAlignment="Left"><TextBlock Text="!" Foreground="{StaticResource Accent}" FontFamily="Consolas" FontWeight="Bold" FontSize="22" VerticalAlignment="Center" HorizontalAlignment="Center"/></Border>
+    <TextBlock x:Name="DialogTitle" Grid.Column="1" FontSize="21" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap"/>
+    <Button Grid.Column="2" Content="✕" Width="34" Padding="0" Margin="12,0,0,0" Background="#29212A" Foreground="#FF927E" ToolTip="{DynamicResource L005}" AutomationProperties.Name="{DynamicResource L006}" shell:WindowChrome.IsHitTestVisibleInChrome="True" Click="CancelDialog"/>
+   </Grid>
+   <Border Grid.Row="1" Background="{StaticResource Panel}" CornerRadius="7" Padding="18"><ScrollViewer MaxHeight="360" VerticalScrollBarVisibility="Auto"><TextBlock x:Name="DialogMessage" TextWrapping="Wrap" LineHeight="22"/></ScrollViewer></Border>
+   <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+    <Button x:Name="CancelButton" Content="{DynamicResource L143}" IsDefault="True" IsCancel="True" MinWidth="108" Click="CancelDialog"/>
+    <Button x:Name="AcceptButton" MinWidth="108" Margin="0" Background="#B44C36" Click="AcceptDialog"/>
+   </StackPanel>
+  </Grid>
+ </Border>
+</Window>
