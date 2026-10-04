@@ -19,6 +19,6 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
-      - name: Build WPF application and run core tests
+      - name: Run core tests and package portable Windows x64 application
         shell: pwsh
-        run: ./Build-Desktop.ps1 -Tests
+        run: ./Publish-Desktop.ps1

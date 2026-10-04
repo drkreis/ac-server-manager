@@ -14,7 +14,9 @@
 
 ## Запуск
 
-Дважды нажмите `Start-Manager.cmd` или `artifacts/desktop/AssettoServerManager.exe`. Сохраняйте DLL и остальные файлы сборки рядом с EXE. Нужен .NET 10 Desktop Runtime x64, который на этом ПК уже установлен.
+Для готовой программы скачайте Windows x64 ZIP из [Releases](https://github.com/drkreis/ac-server-manager/releases), распакуйте весь архив в доступную для записи папку и запустите `AssettoServerManager.exe`. .NET уже включён в этот архив. Сохраняйте DLL и остальные файлы рядом с EXE.
+
+Для локальной сборки из исходников дважды нажмите `Start-Manager.cmd` или `artifacts/desktop/AssettoServerManager.exe`. Такая сборка требует .NET 10 Desktop Runtime x64.
 
 Для сборки нужен .NET 10 SDK. Скрипт использует локальный SDK из `.tools/dotnet`, если он есть, иначе `dotnet` из PATH. Visual Studio не требуется; SDK и кэш не входят в Git. Для запуска готовой сборки нужен .NET 10 Desktop Runtime x64.
 

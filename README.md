@@ -17,9 +17,15 @@
 
 Подробности и ограничения операций: [DESKTOP.md](DESKTOP.md).
 
-## Сборка и запуск
+## Скачать готовую программу
 
-Для сборки на Windows нужен **.NET 10 SDK** из [официального установщика Microsoft](https://learn.microsoft.com/en-us/dotnet/core/install/windows). SDK включает Desktop Runtime; для запуска готовой сборки отдельно нужен **.NET 10 Desktop Runtime x64**.
+В [Releases](https://github.com/drkreis/ac-server-manager/releases) скачайте `ACServerManager-0.3.0-preview-win-x64.zip`, распакуйте **весь архив** в доступную для записи папку и запустите `AssettoServerManager.exe`. Это переносимая сборка для Windows x64 со встроенным .NET; устанавливать SDK или Runtime не требуется. Сохраняйте остальные файлы рядом с EXE.
+
+При первом запуске выберите папку серверов и корневую папку Assetto Corsa. Для подключения потребуется установленный Content Manager; путь к нему можно указать в приложении. Игра, Content Manager, AssettoServer и моды в архив не входят.
+
+## Сборка из исходников
+
+Для сборки на Windows нужен **.NET 10 SDK** из [официального установщика Microsoft](https://learn.microsoft.com/en-us/dotnet/core/install/windows). SDK включает Desktop Runtime. Обычная сборка через `Build-Desktop.ps1` требует .NET 10 Desktop Runtime x64 на машине, где её запускают; архив из Releases уже содержит Runtime.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tests
@@ -29,7 +35,13 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tes
 
 Скрипт использует SDK из `.tools/dotnet`, если он установлен локально, иначе `dotnet` из PATH. Visual Studio для сборки не требуется.
 
-При первом запуске выберите папку серверов и корневую папку Assetto Corsa. Для подключения потребуется установленный Content Manager; путь к нему можно указать в приложении. Игра, Content Manager, AssettoServer и моды в репозиторий не входят.
+Чтобы собрать переносимый архив, выполните:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Publish-Desktop.ps1
+```
+
+Скрипт запускает тесты ядра, публикует приложение для Windows x64 вместе с .NET, добавляет руководство и лицензии, создаёт ZIP и файл SHA-256 в `artifacts/release/`. При первом запуске ему нужен доступ к NuGet для загрузки Runtime.
 
 ## Проверки
 
@@ -51,7 +63,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tes
 - `src/ServerManager.App/` — WPF-интерфейс и управление процессами.
 - `src/ServerManager.Core/` — конфиги, каталог и переводы.
 - `tests/ServerManager.Core.Tests/` — тесты ядра.
-- `Build-Desktop.ps1` — сборка; `Start-Manager.cmd` — запуск.
+- `Build-Desktop.ps1` — сборка; `Publish-Desktop.ps1` — переносимый архив; `Start-Manager.cmd` — запуск локальной сборки.
 - `DESKTOP.md` — руководство пользователя.
 
 SDK, сборки, настройки, логи, бэкапы, серверные конфиги и игровой контент исключены через `.gitignore`. Старый прототип и промежуточные результаты перенесены в локальную папку `.local-archive/`, которая также не входит в Git.
@@ -62,4 +74,4 @@ SDK, сборки, настройки, логи, бэкапы, серверны�
 
 Сохранение настроек требует перезапуска сервера для применения. Закрытие менеджера предлагает завершить запущенные им серверы. Текущая остановка завершает процесс принудительно.
 
-Приложение является независимым проектом. Лицензия для публикации исходников пока не выбрана.
+Приложение является независимым проектом и распространяется под [лицензией MIT](LICENSE). Включённый в релиз .NET распространяется по собственным условиям; тексты лицензий и уведомлений находятся в папке `licenses/` архива.
