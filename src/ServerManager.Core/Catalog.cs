@@ -7,10 +7,22 @@ namespace ServerManager.Core;
 
 public record SkinInfo(string Id, string Name, string? Preview)
 {
+    public string? Icon { get; init; }
     public override string ToString() => Name;
+}
+public record CarDetails
+{
+    public string Country { get; init; } = "";
+    public string Year { get; init; } = "";
+    public string Class { get; init; } = "";
+    public string Author { get; init; } = "";
+    public string Description { get; init; } = "";
+    public IReadOnlyList<string> Tags { get; init; } = [];
+    public IReadOnlyDictionary<string, string> Specs { get; init; } = new Dictionary<string, string>();
 }
 public record CarInfo(string Id, string Name, string Brand, string Directory, string? Preview, IReadOnlyList<SkinInfo> Skins)
 {
+    public CarDetails Details { get; init; } = new();
     public string Label => Name + " · " + Id;
     public string DefaultSkin => Skins.FirstOrDefault()?.Id ?? "";
 }
@@ -61,7 +73,7 @@ public sealed class ContentCatalog
         try
         {
             // Some AC mods store literal newlines in descriptions; escape controls in strings only.
-            using var doc = JsonDocument.Parse(EscapeStringControls(ConfigText.Read(path)), new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip });
+            using var doc = JsonDocument.Parse(EscapeStringControls(ContentMetadata.Read(path)), new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip });
             return doc.RootElement.EnumerateObject().ToDictionary(p => p.Name, p => p.Value.ValueKind == JsonValueKind.String ? p.Value.GetString() ?? "" : p.Value.ToString());
         }
         catch (Exception e) when (e is JsonException or IOException or ArgumentException) { warnings.Add(path + ": " + e.Message); return []; }
@@ -92,10 +104,10 @@ public sealed class ContentCatalog
                 foreach (var skinPath in Directory.EnumerateDirectories(skinsPath))
                 {
                     var skinId = Path.GetFileName(skinPath); var skinMeta = Metadata(Path.Combine(skinPath, "ui_skin.json"), catalog.Warnings);
-                    skins.Add(new(skinId, skinMeta.GetValueOrDefault("skinname", skinId), ImageAt(skinPath, "preview.jpg", "preview.png", "livery.png")));
+                    skins.Add(new(skinId, skinMeta.GetValueOrDefault("skinname", skinId), ImageAt(skinPath, "preview.jpg", "preview.png")) { Icon = ImageAt(skinPath, "livery.png", "livery.jpg") });
                 }
             catalog.Cars.Add(new(id, meta.GetValueOrDefault("name", id), meta.GetValueOrDefault("brand", ""), dir,
-                skins.FirstOrDefault(s => s.Preview != null)?.Preview ?? ImageAt(Path.Combine(dir, "ui"), "preview.jpg", "preview.png", "badge.png"), skins.OrderBy(s => s.Name).ToArray()));
+                skins.FirstOrDefault(s => s.Preview != null)?.Preview ?? ImageAt(Path.Combine(dir, "ui"), "preview.jpg", "preview.png", "badge.png"), skins.OrderBy(s => s.Name).ToArray()) { Details = Details(meta) });
         }
         foreach (var dir in Directory.EnumerateDirectories(Path.Combine(gamePath, "content", "tracks")))
         {
@@ -114,6 +126,33 @@ public sealed class ContentCatalog
         catalog.Cars.Sort((a, b) => StringComparer.CurrentCultureIgnoreCase.Compare(a.Name, b.Name));
         catalog.Tracks.Sort((a, b) => StringComparer.CurrentCultureIgnoreCase.Compare(a.Label, b.Label));
         return catalog;
+    }
+    private static CarDetails Details(Dictionary<string, string> meta)
+    {
+        var specs = new Dictionary<string, string>(); var tags = new List<string>();
+        if (meta.TryGetValue("specs", out var rawSpecs) && rawSpecs.TrimStart().StartsWith('{'))
+        {
+            try
+            {
+                using var json = JsonDocument.Parse(rawSpecs);
+                if (json.RootElement.ValueKind == JsonValueKind.Object)
+                    foreach (var p in json.RootElement.EnumerateObject()) specs[p.Name] = p.Value.ValueKind == JsonValueKind.String ? p.Value.GetString() ?? "" : p.Value.ToString();
+            }
+            catch (JsonException) { /* Optional reference fields must not prevent loading the car. */ }
+        }
+        if (meta.TryGetValue("tags", out var rawTags) && rawTags.TrimStart().StartsWith('['))
+        {
+            try
+            {
+                using var json = JsonDocument.Parse(rawTags);
+                if (json.RootElement.ValueKind == JsonValueKind.Array)
+                    tags.AddRange(json.RootElement.EnumerateArray().Where(v => v.ValueKind == JsonValueKind.String).Select(v => ContentMetadata.PlainText(v.GetString() ?? "")).Where(t => t.Length > 0));
+            }
+            catch (JsonException) { /* Some mods use a free-form tags string. */ }
+        }
+        return new() { Country = ContentMetadata.PlainText(meta.GetValueOrDefault("country", "")), Year = meta.GetValueOrDefault("year", ""),
+            Class = meta.GetValueOrDefault("class", ""), Author = ContentMetadata.PlainText(meta.GetValueOrDefault("author", "")),
+            Description = ContentMetadata.PlainText(meta.GetValueOrDefault("description", "")), Tags = tags, Specs = specs };
     }
     public List<string> Validate(ServerProfile profile, Dictionary<string, string> texts)
     {
@@ -199,14 +238,44 @@ public sealed class ContentCatalog
     public static string? FindGame()
     {
         var roots = new List<string> { Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam") };
-        using var steamKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
-        if (steamKey?.GetValue("SteamPath") is string steam) roots.Insert(0, steam);
+        try
+        {
+            using var steamKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
+            if (steamKey?.GetValue("SteamPath") is string steam) roots.Insert(0, steam);
+        }
+        catch (Exception e) when (e is System.Security.SecurityException or UnauthorizedAccessException or IOException) { }
+        return FindGameInSteamLibraries(roots);
+    }
+    public static string? FindGameInSteamLibraries(IEnumerable<string> steamRoots)
+    {
+        var roots = steamRoots.Where(r => !string.IsNullOrWhiteSpace(r)).ToList();
         foreach (var root in roots.ToArray())
         {
             var vdf = Path.Combine(root, "steamapps", "libraryfolders.vdf");
             if (!File.Exists(vdf)) continue;
-            foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(vdf), "\"path\"\\s*\"([^\"]+)\"")) roots.Add(m.Groups[1].Value.Replace("\\\\", "\\"));
+            try
+            {
+                foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(vdf), "\"path\"\\s*\"([^\"]+)\"")) roots.Add(m.Groups[1].Value.Replace("\\\\", "\\"));
+            }
+            catch (Exception e) when (e is UnauthorizedAccessException or IOException) { }
         }
-        return roots.Distinct().Select(r => Path.Combine(r, "steamapps", "common", "assettocorsa")).FirstOrDefault(Directory.Exists);
+        foreach (var root in roots.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            var installDir = "assettocorsa";
+            var manifest = Path.Combine(root, "steamapps", "appmanifest_244210.acf");
+            try
+            {
+                if (File.Exists(manifest))
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(File.ReadAllText(manifest), "\"installdir\"\\s*\"([^\"]+)\"");
+                    var folder = match.Groups[1].Value;
+                    if (match.Success && folder is not "." and not ".." && Path.GetFileName(folder) == folder) installDir = folder;
+                }
+            }
+            catch (Exception e) when (e is UnauthorizedAccessException or IOException) { }
+            var path = Path.Combine(root, "steamapps", "common", installDir);
+            if (Directory.Exists(Path.Combine(path, "content", "cars")) && Directory.Exists(Path.Combine(path, "content", "tracks"))) return path;
+        }
+        return null;
     }
 }

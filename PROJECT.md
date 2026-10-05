@@ -1,6 +1,6 @@
 # AC Server Manager: project guide
 
-This guide describes source version **0.4.1-preview**, its files and the steps for publishing it manually. All paths below are relative to the project root unless stated otherwise.
+This guide describes source version **0.5.2-preview**, its files and the steps for publishing it manually. All paths below are relative to the project root unless stated otherwise.
 
 ## Source, application and game server
 
@@ -9,7 +9,7 @@ There are three separate things:
 | Location | Contents | Purpose |
 | --- | --- | --- |
 | This repository | C# source, XAML interface, translations, tests, scripts and documentation | Develop and build AC Server Manager. |
-| `artifacts/desktop-0.4.1/` or an extracted portable package | `AssettoServerManager.exe`, application DLLs and dependencies | Run the manager. A portable package also includes .NET. |
+| `artifacts/desktop-0.5.2/` or an extracted portable package | `AssettoServerManager.exe`, application DLLs and dependencies | Run the manager. A portable package also includes .NET. |
 | Your chosen server folder, for example `Desktop/AC Servers/<server>/` | `AssettoServer.exe`, `cfg/`, server content and plugins | Run an actual Assetto Corsa server. This is outside the repository. |
 
 The manager executable retains the name `AssettoServerManager.exe` even though the product is called **AC Server Manager**. It is a different program from **AssettoServer.exe**. The game and Content Manager are also separate applications.
@@ -28,11 +28,12 @@ The manager executable retains the name `AssettoServerManager.exe` even though t
 | `ACServerManager.slnx` | XML solution listing the app, core and test projects. An IDE can open it as one workspace. It does not launch the application. |
 | `Build-Desktop.ps1` | Builds the Windows app; `-Tests` also runs core tests. Uses `.tools/dotnet` if present, otherwise the SDK on PATH. |
 | `Publish-Desktop.ps1` | Runs core tests, builds a portable Windows x64 package, copies guides/licenses and writes the ZIP and `SHA256SUMS.txt`. Does not publish to GitHub. |
-| `Start-Manager.cmd` | Opens `artifacts/desktop-0.4.1/AssettoServerManager.exe`. It launches an existing build; it does not compile source or start a game server. |
+| `Start-Manager.cmd` | Opens `artifacts/desktop-0.5.2/AssettoServerManager.exe`. It launches an existing build; it does not compile source or start a game server. |
 | `.gitignore` | Excludes local SDKs, builds, caches, settings, server configurations, backups and game data from new Git additions. |
 | `.github/workflows/build.yml` | GitHub Actions build on push, pull request or manual invocation. Runs portable packaging on Windows; currently does not upload artifacts or create releases. |
 | `.github/releases/v0.3.0-preview.md` | Historical release notes for the first public release. Its 0.3 version and feature list are intentional. |
-| `.github/releases/v0.4.1-preview.md` | Prepared release notes for the new preview. Copy them into the release description when publishing. Keeping this file in Git does not publish a release. |
+| `.github/releases/v0.4.1-preview.md` | Historical notes for the wizard release and practice joining fix. |
+| `.github/releases/v0.5.2-preview.md` | Prepared release notes for the new preview. Copy them into the release description when publishing. Keeping this file in Git does not publish a release. |
 
 ### `src/ServerManager.App/`: Windows interface
 
@@ -40,11 +41,16 @@ This is the WPF application. **XAML** describes visible controls, layouts and st
 
 | File | Responsibility |
 | --- | --- |
-| `ServerManager.App.csproj` | App project settings: Windows target, WPF, .NET 10, executable name, versions and reference to Core. Current `Version` is `0.4.1`; `InformationalVersion` is `0.4.1-preview`. |
+| `ServerManager.App.csproj` | App project settings: Windows target, WPF, .NET 10, executable name, versions and reference to Core. Current `Version` is `0.5.2`; `InformationalVersion` is `0.5.2-preview`. |
 | `App.xaml` | Application-wide resources: palette, fonts, buttons, drop-downs, tooltips, scrollbars and table styles. |
 | `App.xaml.cs` | Startup in `OnStartup`, UI exception handling and dispatch of optional QA command-line modes. Creates the main window in normal operation. |
 | `MainWindow.xaml` | Main window layout: header, server sidebar, Overview, Cars and slots, Catalog, Validation, Log and action buttons. Contains the visible version badge. |
 | `MainWindow.xaml.cs` | Main editor behavior: profiles and drafts, settings, catalog selection, language changes, slot editing, saving, launching/stopping servers and opening CM. Also contains smoke/window checks and UI helper types. |
+| `MainWindow.ServerActions.cs` | Slot double-click handling and stopped-server folder actions: context menus, rename with draft preservation, process checks and Windows Recycle Bin deletion. |
+| `ManagerSettings.cs` | Shared per-user settings and migration of older per-build settings, including recovery of the Content Manager path. |
+| `MainWindow.DetailsQA.cs` | Optional UI checks for first launch, actual search caret geometry, car dialog behavior, saving and failure recovery, context-menu targets and process guards. Writes disposable fixtures under its output folder. |
+| `CarDetailsWindow.xaml` | Single-car dialog layout, skin swatches, preview, reference fields and apply/cancel actions. |
+| `CarDetailsWindow.xaml.cs` | Populates car information and switches previews; returns the chosen skin without editing game files or saving a server. |
 | `MainWindow.WizardQA.cs` | Wizard integration test orchestration: creates a separate test server, starts it, checks HTTP/listeners/handshake and stops its own process. |
 | `CreateServerWindow.xaml` | Layout of the five-step creation wizard. |
 | `CreateServerWindow.xaml.cs` | Wizard navigation, input validation, choices, progress/cancellation and calling the installation/creation services. |
@@ -66,6 +72,10 @@ Core has no WPF interface. The app and console tests both use it. It contains no
 | `ServerManager.Core.csproj` | .NET 10 class library settings; embeds `Translations.json` into the compiled DLL. |
 | `Configuration.cs` | Reads and edits INI/YAML fields, discovers/loads profiles, represents slots, builds configuration text and saves with backups, conflict checks and rollback. Preserves unknown fields instead of rewriting a whole configuration schema. |
 | `Catalog.cs` | Reads installed car/skin/track metadata, previews and pit counts; groups layouts by track; finds the game; validates content and plans missing files to copy. Tolerates selected malformed mod JSON without editing game files. |
+| `ContentMetadata.cs` | Read-only UTF-8/Unicode/legacy Windows-1252 decoding for game metadata and conversion of description HTML to plain text. |
+| `ContentManagerLocator.cs` | Finds a valid CM executable from saved/running paths, registered protocol commands and known portable folders. Parses commands without running a shell. |
+| `ServerRename.cs` | Validates folder names and destinations, moves a server without rewriting files, supports case-only changes and rejects collisions. Process checks live in the app. |
+| `ServerRemoval.cs` | Validates a selected removal target, excluding game paths, nested servers, links and network folders. Actual recycling is performed by the Windows app after confirmation. |
 | `ServerCreation.cs` | Creates a fresh server from a folder or ZIP: validates inputs, installs program files, generates configurations, copies required content, handles staging/cancellation and refuses existing destinations. Generates an open practice session with `IS_OPEN=1`. |
 | `Translations.json` | RU/EN UI strings and messages indexed by resource keys. Russian text here is intentional. This file is embedded, so translation edits require a rebuild. |
 | `UiText.cs` | Loads embedded translations, selects the language and formats translated messages. |
@@ -77,6 +87,8 @@ Core has no WPF interface. The app and console tests both use it. It contains no
 | `ServerManager.Core.Tests.csproj` | Console test project targeting .NET 10 and referencing Core. It uses a small assertion runner, not a separate test framework. |
 | `Program.cs` | Test entry point and assertions for configuration preservation, saving, backups, slot ordering, catalog parsing and translations; invokes creation tests. |
 | `CreationTests.cs` | Tests fresh server creation, installation sources, generated settings/content, cancellation, cleanup, private-data separation and ZIP/destination validation. |
+| `SaveAndFolderTests.cs` | No-op/content-only saves, backups and timestamps, stale baselines, real temporary-folder renames/collisions/case-only changes and CM discovery. |
+| `ContentAndRemovalTests.cs` | Legacy/Unicode metadata, car fields, skin image discovery, Steam library discovery and server removal boundary checks. |
 
 Run these tests with `Build-Desktop.ps1 -Tests`, `Publish-Desktop.ps1` or `dotnet run --project tests/ServerManager.Core.Tests -c Release`. `dotnet test` is not the test runner for this project. Core tests use temporary data and do not need the game or existing servers.
 
@@ -91,7 +103,7 @@ Run these tests with `Build-Desktop.ps1 -Tests`, `Publish-Desktop.ps1` or `dotne
 | `bin/` in a project | Default compiler output, including executable/library files. | No. |
 | `obj/` in a project | Restore/build intermediates and generated WPF code. Recreated by the SDK. | No. |
 | `tests/scratch-*/` | Temporary test fixtures if retained after an interrupted test. | No. |
-| `settings.json` beside the manager EXE | Local server/game/CM paths and selected language. Different build folders can have different settings. Created when settings are saved. | No. |
+| `%LOCALAPPDATA%\ACServerManager\settings.json` | Shared per-user server/game/CM paths and language, reused across versions. Older per-build settings are read for migration. QA modes isolate settings and never write this file. | No. |
 | `licenses/` in a portable package | License and third-party notices for the bundled .NET runtime. Generated during packaging. | Include in the release ZIP. |
 
 An ordinary build also contains `AssettoServerManager.dll`, `ServerManager.Core.dll`, dependency/runtime JSON files and possibly PDB debugging symbols. The EXE is the Windows launch host for the compiled app. A portable package adds .NET runtime DLLs. Do not copy just the EXE out of either build.
@@ -124,12 +136,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tes
 .\Start-Manager.cmd
 
 # Create a portable package in a new output folder.
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Publish-Desktop.ps1 -OutputRoot .\artifacts\manual-release-0.4.1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Publish-Desktop.ps1 -OutputRoot .\artifacts\manual-release-0.5.2
 ```
 
-The default regular build folder is `artifacts/desktop-0.4.1/`; `-OutputDirectory` overrides it. `Start-Manager.cmd` still points to the default folder. Close the manager before rebuilding into a folder whose executable/DLLs it is using, or build into another folder.
+The default regular build folder is `artifacts/desktop-0.5.2/`; `-OutputDirectory` overrides it. `Start-Manager.cmd` still points to the default folder. Close the manager before rebuilding into a folder whose executable/DLLs it is using, or build into another folder.
 
-The packaging example produces `ACServerManager-0.4.1-preview-win-x64.zip` and `SHA256SUMS.txt`. If that output already exists, choose another `-OutputRoot`. The script intentionally preserves old packages. It includes the four Markdown guides, MIT license and runtime notices, and refuses to include personal `settings.json`.
+The packaging example produces `ACServerManager-0.5.2-preview-win-x64.zip` and `SHA256SUMS.txt`. If that output already exists, choose another `-OutputRoot`. The script intentionally preserves old packages. It includes the four Markdown guides, MIT license and runtime notices, and refuses to include personal `settings.json`.
 
 Optional smoke, window and wizard QA modes are described in [README.md](README.md). They depend on local game content; wizard QA creates and briefly starts its own test server. Ordinary builds and core tests do not start a server.
 
@@ -174,7 +186,7 @@ For this existing checkout, the remote is `origin` pointing to `https://github.c
 3. Save a local commit, then upload it:
 
    ```powershell
-   git commit -m "Add server creation wizard and fix practice joining (0.4.1)"
+   git commit -m "Add car details and server removal (0.5.2)"
    git push origin master
    ```
 
@@ -187,9 +199,9 @@ For this existing checkout, the remote is `origin` pointing to `https://github.c
 After pushing the source and verifying the intended commit:
 
 1. Open the repository's [Releases](https://github.com/drkreis/ac-server-manager/releases) page and choose **Draft a new release**.
-2. Create the tag **`v0.4.1-preview`**, targeting the pushed `master` revision. If this tag already exists, inspect it before reusing it; do not move an existing published version silently.
-3. Use the title **AC Server Manager 0.4.1 Preview** and copy `.github/releases/v0.4.1-preview.md` into the description.
-4. Attach the matching **`ACServerManager-0.4.1-preview-win-x64.zip`** and **`SHA256SUMS.txt`** from the same packaging output folder.
+2. Create the tag **`v0.5.2-preview`**, targeting the pushed `master` revision. If this tag already exists, inspect it before reusing it; do not move an existing published version silently.
+3. Use the title **AC Server Manager 0.5.2 Preview** and copy `.github/releases/v0.5.2-preview.md` into the description.
+4. Attach the matching **`ACServerManager-0.5.2-preview-win-x64.zip`** and **`SHA256SUMS.txt`** from the same packaging output folder.
 5. Select **This is a pre-release**, review the attachments, then choose **Publish release**, or **Save draft** to leave it unpublished.
 
 These are separate operations: pushing source, building a package, and publishing a Release. The automatically generated **Source code** ZIP on GitHub does not replace the portable application attachment. See [GitHub's release guide](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository).

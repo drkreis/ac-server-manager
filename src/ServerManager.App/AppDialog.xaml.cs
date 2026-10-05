@@ -6,6 +6,7 @@ namespace ServerManager.App;
 
 public partial class AppDialog : Window
 {
+    private Action<string>? validateInput;
     public AppDialog(string message, string title, string accept, bool confirmation)
     {
         InitializeComponent();
@@ -22,7 +23,22 @@ public partial class AppDialog : Window
         else dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         dialog.ShowDialog();
     }
-    private void AcceptDialog(object sender, RoutedEventArgs e) => DialogResult = true;
+    public static string? Prompt(Window owner, string message, string title, string initial, Action<string> validate)
+    {
+        var dialog = new AppDialog(message, title, "Переименовать", true) { Owner = owner, validateInput = validate };
+        dialog.DialogInput.Text = initial; dialog.DialogInput.Visibility = Visibility.Visible;
+        dialog.CancelButton.IsDefault = false; dialog.AcceptButton.IsDefault = true;
+        dialog.Loaded += (_, _) => { dialog.DialogInput.Focus(); dialog.DialogInput.SelectAll(); };
+        return dialog.ShowDialog() == true ? dialog.DialogInput.Text : null;
+    }
+    private void AcceptDialog(object sender, RoutedEventArgs e)
+    {
+        if (validateInput != null)
+            try { validateInput(DialogInput.Text); }
+            catch (Exception ex) { InputError.Text = ex.Message; InputError.Visibility = Visibility.Visible; return; }
+        DialogResult = true;
+    }
     private void CancelDialog(object sender, RoutedEventArgs e) => DialogResult = false;
+    private void InputChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) { if (InputError != null) InputError.Visibility = Visibility.Collapsed; }
     private void DialogKeyDown(object sender, KeyEventArgs e) { if (e.Key == Key.Escape) { DialogResult = false; e.Handled = true; } }
 }

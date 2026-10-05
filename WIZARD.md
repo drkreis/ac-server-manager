@@ -1,4 +1,4 @@
-# Creating a server in AC Server Manager 0.4.1 Preview
+# Creating a server in AC Server Manager 0.5.2 Preview
 
 Click **Create server** above the server list. The wizard follows the application's selected language and dark theme. You can go back to edit earlier choices; a server folder is created only after the final confirmation.
 
@@ -58,4 +58,4 @@ On success, the wizard closes and the new server is selected in the main editor.
 
 The wizard creates a basic local server. Presets, cloning, automated mod downloads, `data.acd` packing, router configuration and a full weather/plugin editor are deferred. Review advanced AssettoServer settings separately as needed. Changing server configuration after creation requires saving and restarting the server.
 
-This guide covers source version **0.4.1-preview**. Available portable packages are listed in [GitHub Releases](https://github.com/drkreis/ac-server-manager/releases). Building or packaging locally does not publish a release.
+This guide covers source version **0.5.2-preview**. Available portable packages are listed in [GitHub Releases](https://github.com/drkreis/ac-server-manager/releases). Building or packaging locally does not publish a release.

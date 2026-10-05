@@ -108,13 +108,14 @@ public sealed class Slot : INotifyPropertyChanged
 
 public sealed class ServerProfile
 {
+    private string path = "", ini = "", extra = "", entries = "";
     public ServerProfile() => Slots.CollectionChanged += (_, _) => { for (var i = 0; i < Slots.Count; i++) Slots[i].Number = i; };
-    public required string Path { get; init; }
+    public required string Path { get => path; init => path = value; }
     public string Folder => System.IO.Path.GetFileName(Path);
     public string Name => ConfigText.Get(Ini, "SERVER", "NAME", Folder);
-    public required string Ini { get; init; }
-    public required string Extra { get; init; }
-    public required string Entries { get; init; }
+    public required string Ini { get => ini; init => ini = value; }
+    public required string Extra { get => extra; init => extra = value; }
+    public required string Entries { get => entries; init => entries = value; }
     public required Dictionary<string, byte[]> OriginalBytes { get; init; }
     public ObservableCollection<Slot> Slots { get; } = [];
     public string Track => ConfigText.Get(Ini, "SERVER", "TRACK");
@@ -182,10 +183,40 @@ public sealed class ServerProfile
         return new() { ["server_cfg.ini"] = ini, ["entry_list.ini"] = output.ToString(),
             ["extra_cfg.yml"] = ConfigText.SetYaml(ConfigText.SetYaml(Extra, "EnableAi", ai), "EnableWeatherFx", weather) };
     }
-    public string Save(Dictionary<string, string> texts, IReadOnlyList<CopyPlan>? content = null)
+    public Dictionary<string, string> SavedTexts => new() { ["server_cfg.ini"] = Ini, ["extra_cfg.yml"] = Extra, ["entry_list.ini"] = Entries };
+    public void Relocate(string destination) => path = System.IO.Path.GetFullPath(destination);
+    // Refresh the disk baseline without replacing slot objects bound to the editor.
+    public void AcceptSaved(ServerProfile saved)
+    {
+        path = saved.Path; ini = saved.Ini; extra = saved.Extra; entries = saved.Entries;
+        OriginalBytes.Clear();
+        foreach (var pair in saved.OriginalBytes) OriginalBytes.Add(pair.Key, pair.Value);
+    }
+    public string? Save(Dictionary<string, string> texts, IReadOnlyList<CopyPlan>? content = null)
     {
         foreach (var (file, original) in OriginalBytes)
             if (!File.ReadAllBytes(System.IO.Path.Combine(Path, "cfg", file)).SequenceEqual(original)) throw new InvalidOperationException(T("Файлы изменились после открытия. Перечитайте сервер."));
+        byte[] Encode(string file, string text)
+        {
+            var encoding = new UTF8Encoding(OriginalBytes[file].Take(3).SequenceEqual(new byte[] { 239, 187, 191 }));
+            return encoding.GetPreamble().Concat(encoding.GetBytes(text)).ToArray();
+        }
+        string Destination(CopyPlan plan)
+        {
+            var destination = System.IO.Path.GetFullPath(System.IO.Path.Combine(Path, plan.RelativeDestination));
+            if (!destination.StartsWith(Path.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException(T("Некорректный путь серверного контента."));
+            return destination;
+        }
+        bool ContentChanged(CopyPlan plan)
+        {
+            var destination = Destination(plan);
+            if (!File.Exists(destination)) return true;
+            using var source = File.OpenRead(plan.Source); using var target = File.OpenRead(destination);
+            return source.Length != target.Length || !System.Security.Cryptography.SHA256.HashData(source).SequenceEqual(System.Security.Cryptography.SHA256.HashData(target));
+        }
+        var changedTexts = texts.Where(pair => !Encode(pair.Key, pair.Value).SequenceEqual(OriginalBytes[pair.Key])).ToDictionary();
+        var changedContent = (content ?? []).Where(ContentChanged).ToList();
+        if (changedTexts.Count == 0 && changedContent.Count == 0) return null;
         var id = DateTime.Now.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N")[..8];
         var backup = System.IO.Path.Combine(Path, "backups", id); Directory.CreateDirectory(backup);
         foreach (var file in OriginalBytes.Keys) File.Copy(System.IO.Path.Combine(Path, "cfg", file), System.IO.Path.Combine(backup, file));
@@ -193,21 +224,19 @@ public sealed class ServerProfile
         var staged = new List<(string Temp, string Destination, string? Backup)>();
         try
         {
-            foreach (var plan in content ?? [])
+            foreach (var plan in changedContent)
             {
-                var dest = System.IO.Path.GetFullPath(System.IO.Path.Combine(Path, plan.RelativeDestination));
-                if (!dest.StartsWith(Path.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException(T("Некорректный путь серверного контента."));
+                var dest = Destination(plan);
                 string? old = null;
                 if (File.Exists(dest)) { old = System.IO.Path.Combine(backup, "content", plan.RelativeDestination); Directory.CreateDirectory(System.IO.Path.GetDirectoryName(old)!); File.Copy(dest, old); }
                 Directory.CreateDirectory(System.IO.Path.GetDirectoryName(dest)!);
                 var temp = dest + "." + id + ".tmp"; staged.Add((temp, dest, old)); File.Copy(plan.Source, temp);
             }
-            foreach (var (file, text) in texts)
+            foreach (var (file, text) in changedTexts)
             {
                 var dest = System.IO.Path.Combine(Path, "cfg", file); var temp = dest + "." + id + ".tmp";
                 staged.Add((temp, dest, System.IO.Path.Combine(backup, file)));
-                var bom = OriginalBytes[file].Take(3).SequenceEqual(new byte[] { 239, 187, 191 });
-                File.WriteAllText(temp, text, new UTF8Encoding(bom));
+                File.WriteAllBytes(temp, Encode(file, text));
             }
             foreach (var entry in staged)
             {

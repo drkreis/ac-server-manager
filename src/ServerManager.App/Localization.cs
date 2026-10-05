@@ -13,7 +13,7 @@ public sealed class Localization : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
     public void Apply(string? language)
     {
-        UiText.Language = language == "en" ? "en" : "ru";
+        UiText.Language = language == "ru" ? "ru" : "en";
         foreach (var (id, translation) in UiText.Entries) Application.Current.Resources[id] = UiText.Language == "en" ? translation.En : translation.Ru;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Language)));
     }

@@ -5,7 +5,7 @@ namespace ServerManager.Core;
 public record Translation(string Ru, string En);
 public static class UiText
 {
-    public static string Language { get; set; } = "ru";
+    public static string Language { get; set; } = "en";
     public static IReadOnlyDictionary<string, Translation> Entries { get; } = Read();
     private static readonly Dictionary<string, Translation> ByRussian = Entries.Values.ToDictionary(v => v.Ru);
     private static Dictionary<string, Translation> Read()

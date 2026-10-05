@@ -10,10 +10,11 @@ public enum ServerRunState { Checking, Stopped, Starting, Managed, External, Unk
 
 public sealed class ServerRow(ServerProfile profile) : INotifyPropertyChanged
 {
-    public ServerProfile Profile { get; } = profile;
+    public ServerProfile Profile { get; private set; } = profile;
     public string Folder => Profile.Folder;
     public ServerRunState State { get; private set; } = ServerRunState.Checking;
     public int[] ProcessIds { get; private set; } = [];
+    public bool CanDelete => State == ServerRunState.Stopped;
     public bool IsRunning => State is ServerRunState.Starting or ServerRunState.Managed or ServerRunState.External;
     public string StatusLabel => T(State switch
     {
@@ -23,8 +24,8 @@ public sealed class ServerRow(ServerProfile profile) : INotifyPropertyChanged
     });
     public string StatusColor => State switch
     {
-        ServerRunState.Starting => "#E9B46D", ServerRunState.Managed or ServerRunState.External => "#75D9AA",
-        ServerRunState.Unknown => "#E9B46D", _ => "#747D8D"
+        ServerRunState.Starting => "#FF5D43", ServerRunState.Managed or ServerRunState.External => "#75D9AA",
+        ServerRunState.Unknown => "#FF5D43", _ => "#747D8D"
     };
     public string StatusHint => StatusLabel + (ProcessIds.Length > 0 ? " · PID " + string.Join(", ", ProcessIds) : "")
         + (State == ServerRunState.External ? T("\nПроцесс запущен отдельно. Остановите его в исходном окне или менеджере.") : "")
@@ -36,6 +37,8 @@ public sealed class ServerRow(ServerProfile profile) : INotifyPropertyChanged
         State = state; ProcessIds = ids; RefreshLabels();
     }
     public void RefreshLabels() => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+    public void RefreshProfile() => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+    public void ReplaceProfile(ServerProfile value) { Profile = value; RefreshProfile(); }
 }
 
 public sealed record ServerProcessSnapshot(IReadOnlyDictionary<string, int[]> ByFolder, bool HasUnreadablePaths)

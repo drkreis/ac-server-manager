@@ -8,6 +8,9 @@ void MustThrow(Action action, string message) { try { action(); } catch { return
 void Put(string path, string text) { Directory.CreateDirectory(Path.GetDirectoryName(path)!); File.WriteAllText(path, text, new UTF8Encoding(true)); }
 try
 {
+    UiText.Language = "ru";
+    ContentAndRemovalTests.Run(Path.Combine(root, "content-and-removal"));
+    SaveAndFolderTests.Run(Path.Combine(root, "save-and-folders"));
     CreationTests.Run(Path.Combine(root, "creation"));
     var server = Path.Combine(root, "server"); var cfg = Path.Combine(server, "cfg");
     Put(Path.Combine(cfg, "server_cfg.ini"), "; retained\r\n[SERVER]\r\nNAME=Fixture\r\nTRACK=track\r\nCONFIG_TRACK=layout\r\nMAX_CLIENTS=10\r\nCARS=old;unused\r\nPASSWORD=private\r\nCUSTOM_SERVER=yes\r\n[WEATHER_0]\r\nGRAPHICS=3_clear\r\n");
@@ -50,7 +53,7 @@ try
     MustThrow(() => profile.Build(new() { ["MAX_CLIENTS"]="1" }, false, true), "Insufficient slot cap accepted");
     MustThrow(() => ConfigText.SetYaml("EnableAi: true\nEnableAi: false", "EnableAi", true), "Duplicate YAML accepted");
     var source = Path.Combine(root, "source.acd"); File.WriteAllText(source, "car data");
-    var backup = profile.Save(texts, [new(source, @"content\cars\new\data.acd")]);
+    var backup = profile.Save(texts, [new(source, @"content\cars\new\data.acd")]) ?? throw new Exception("Changed save produced no backup.");
     Check(File.Exists(Path.Combine(backup, "server_cfg.ini")), "Backup missing");
     Check(ConfigText.Read(Path.Combine(backup, "server_cfg.ini")) == profile.Ini, "Backup is not original");
     Check(File.ReadAllBytes(Path.Combine(cfg, "server_cfg.ini"))[0] == 239, "BOM lost");

@@ -1,0 +1,29 @@
+<Window x:Class="ServerManager.App.CarDetailsWindow"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:local="clr-namespace:ServerManager.App" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+ Title="Car details" Width="920" Height="780" MinWidth="740" MinHeight="620" WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+ Background="{StaticResource Bg}" Foreground="#EDEFF4" FontFamily="Bahnschrift" FontSize="14" TextOptions.TextFormattingMode="Display" KeyDown="WindowKeyDown">
+ <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="72" ResizeBorderThickness="6" GlassFrameThickness="0" UseAeroCaptionButtons="False"/></shell:WindowChrome.WindowChrome>
+ <Window.Resources><local:FileImageConverter x:Key="FileImage"/></Window.Resources>
+ <Grid Margin="24" Background="{StaticResource Bg}"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <Grid Margin="0,0,0,20"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+   <StackPanel><TextBlock Text="{DynamicResource CarDetailsTitle}" FontSize="12" Foreground="{StaticResource Muted}"/><TextBlock x:Name="CarName" FontSize="24" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/></StackPanel>
+   <Button Grid.Column="1" Content="✕" Width="38" Padding="0" Margin="12,0,0,0" ToolTip="{DynamicResource L005}" shell:WindowChrome.IsHitTestVisibleInChrome="True" Click="Cancel"/>
+  </Grid>
+  <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel>
+   <ListBox x:Name="SkinSwatches" SelectionChanged="SkinChanged" Margin="0,0,0,14" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+    <ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ListBox.ItemsPanel>
+    <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem"><Setter Property="Margin" Value="0,0,8,8"/><Setter Property="Padding" Value="4"/><Setter Property="BorderThickness" Value="1"/><Setter Property="BorderBrush" Value="#343A48"/><Setter Property="ToolTip" Value="{Binding Name}"/>
+     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem"><Border x:Name="B" Background="#22262F" BorderThickness="1" BorderBrush="{TemplateBinding BorderBrush}" Padding="{TemplateBinding Padding}" CornerRadius="5"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsSelected" Value="True"><Setter TargetName="B" Property="BorderBrush" Value="{StaticResource Accent}"/><Setter TargetName="B" Property="Background" Value="#34313A"/></Trigger><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="B" Property="BorderBrush" Value="#86B4DC"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+    </Style></ListBox.ItemContainerStyle>
+    <ListBox.ItemTemplate><DataTemplate><Grid Width="40" Height="40"><Image x:Name="SkinIcon" Source="{Binding Icon, Converter={StaticResource FileImage}}" Stretch="UniformToFill"/><TextBlock x:Name="MissingIcon" Visibility="Collapsed" Text="{Binding Name}" FontSize="10" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Center"/></Grid><DataTemplate.Triggers><DataTrigger Binding="{Binding Source, ElementName=SkinIcon}" Value="{x:Null}"><Setter TargetName="MissingIcon" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ListBox.ItemTemplate>
+   </ListBox>
+   <Grid Height="290"><Border Background="{StaticResource Panel}" CornerRadius="9" ClipToBounds="True"><Image x:Name="Preview" Stretch="Uniform"/></Border><TextBlock x:Name="NoPreview" Text="{DynamicResource NoCarPreview}" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center"/></Grid>
+   <Grid Margin="0,12,0,18"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><StackPanel><TextBlock x:Name="SkinName" FontWeight="SemiBold"/><TextBlock x:Name="SkinId" Foreground="{StaticResource Muted}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/></StackPanel><TextBlock x:Name="CarId" Grid.Column="1" Foreground="{StaticResource Muted}" FontFamily="Consolas" FontSize="12" Margin="16,0,0,0" VerticalAlignment="Center"/></Grid>
+   <WrapPanel x:Name="Facts"/>
+   <TextBlock x:Name="Tags" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,6,0,12"/>
+   <TextBlock x:Name="Description" TextWrapping="Wrap" LineHeight="21" Foreground="#C4C9D3" Margin="0,0,8,0"/>
+  </StackPanel></ScrollViewer>
+  <Grid Grid.Row="2" Margin="0,20,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="{DynamicResource CarSkinApplyHint}" Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,20,0"/><StackPanel Grid.Column="1" Orientation="Horizontal"><Button Content="{DynamicResource L143}" IsCancel="True" Click="Cancel"/><Button x:Name="UseSkinButton" Content="{DynamicResource UseCarSkin}" Background="{StaticResource Accent}" Click="ApplySkin"/></StackPanel></Grid>
+ </Grid>
+</Window>

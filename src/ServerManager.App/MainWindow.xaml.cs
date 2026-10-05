@@ -60,7 +60,7 @@ public record RoleChoice(string Id, string RussianName) : INotifyPropertyChanged
     public void RefreshName() => PropertyChanged?.Invoke(this, new(nameof(Name)));
     public override string ToString() => Name;
 }
-public record UserSettings(string ServersRoot, string GameRoot, string ContentManager, string Language = "ru");
+public record UserSettings(string ServersRoot, string GameRoot, string ContentManager, string Language = "en");
 public sealed class ManagedServer(Process process)
 {
     public Process Process { get; } = process;
@@ -73,30 +73,42 @@ public partial class MainWindow : Window
     private ServerProfile? profile;
     private ContentCatalog? catalog;
     private readonly Dictionary<string, ManagedServer> managed = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ObservableCollection<ServerRow> serverRows = [];
     private readonly System.Windows.Threading.DispatcherTimer processTimer = new() { Interval = TimeSpan.FromSeconds(3) };
     private ServerProcessSnapshot processSnapshot = new(new Dictionary<string, int[]>(StringComparer.OrdinalIgnoreCase), false);
     private bool refreshingProcesses;
-    private bool loading = true, dirty, closing, updatingLayoutPickers;
+    private bool loading = true, dirty, closing, updatingLayoutPickers, saving, folderOperation;
     private string slotFilter = "all", cmPath = "", lastSelectedPath = "";
-    private readonly string settingsFile = Path.Combine(AppContext.BaseDirectory, "settings.json");
+    private readonly string settingsFile;
     private readonly string[] args;
-    private bool IsTestMode => args.Contains("--smoke") || args.Contains("--window-qa") || args.Contains("--wizard-qa") || args.Contains("--wizard-download-qa");
+    private bool IsTestMode => args.Contains("--ui-qa") || args.Contains("--smoke") || args.Contains("--window-qa") || args.Contains("--wizard-qa") || args.Contains("--wizard-download-qa");
     private Dictionary<string, string>? lastDiagnostics;
+    private Dictionary<string, string>? draftBaseline;
     private int lastCopies;
     public MainWindow(string[] args)
     {
         this.args = args;
+        settingsFile = IsTestMode ? Path.Combine(AppContext.BaseDirectory, "settings.json") : ManagerSettings.SharedFile;
         RoleChoices = new[] { new RoleChoice("none", "Игрок"), new RoleChoice("fixed", "Трафик"), new RoleChoice("auto", "Игрок / AI") };
         InitializeComponent();
-        ServerRoot.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "AC Servers");
+        ServerList.ItemsSource = serverRows;
+        ServerRoot.Text = "";
         GameRoot.Text = ContentCatalog.FindGame() ?? "";
         try
         {
-            if (File.Exists(settingsFile) && JsonSerializer.Deserialize<UserSettings>(File.ReadAllText(settingsFile)) is { } settings)
+            if (ManagerSettings.Load(AppContext.BaseDirectory, settingsFile, IsTestMode) is { } settings)
             { ServerRoot.Text = settings.ServersRoot; GameRoot.Text = settings.GameRoot; cmPath = settings.ContentManager; Localization.Current.Apply(settings.Language); }
         }
         catch (Exception e) { Status.Text = T("Не удалось прочитать настройки приложения: ") + e.Message; }
-        Loaded += async (_, _) => { if (!IsTestMode) await InitializeAsync(); };
+        if (!Directory.Exists(ServerRoot.Text)) ServerRoot.Text = "";
+        if (!Directory.Exists(GameRoot.Text)) GameRoot.Text = ContentCatalog.FindGame() ?? "";
+        if (IsTestMode)
+        {
+            string? Option(string name) { var i = Array.IndexOf(args, name); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }
+            ServerRoot.Text = Option("--servers-root") ?? ServerRoot.Text;
+            GameRoot.Text = Option("--game-root") ?? GameRoot.Text;
+        }
+        Loaded += async (_, _) => { if (!IsTestMode) { await InitializeAsync(); StoreSettings(); } };
         Closing += WindowClosing;
         processTimer.Tick += async (_, _) => await RefreshProcessStatesAsync();
         SourceInitialized += (_, _) => NativeWindow.Attach(this);
@@ -153,7 +165,8 @@ public partial class MainWindow : Window
             }
             Scan();
             if (!IsTestMode) { await RefreshProcessStatesAsync(); processTimer.Start(); }
-            Status.Text = catalog == null ? T("Укажите папку игры для каталога.") : T("Каталог: {0} машин · {1} вариантов трасс · замечаний к метаданным: {2}", catalog.Cars.Count, catalog.Tracks.Count, catalog.Warnings.Count);
+            Status.Text = string.IsNullOrWhiteSpace(ServerRoot.Text) ? T("Выберите папку серверов или создайте первый сервер.")
+                : catalog == null ? T("Укажите папку игры для каталога.") : T("Каталог: {0} машин · {1} вариантов трасс · замечаний к метаданным: {2}", catalog.Cars.Count, catalog.Tracks.Count, catalog.Warnings.Count);
         }
         catch (Exception e) { Fail(e); }
     }
@@ -187,13 +200,28 @@ public partial class MainWindow : Window
     {
         var errors = new List<string>();
         var profiles = Directory.Exists(ServerRoot.Text) ? ServerProfile.Discover(ServerRoot.Text, errors) : [];
-        loading = true; ServerList.ItemsSource = profiles.Select(p => new ServerRow(p)).ToList(); loading = false;
-        ApplyProcessStates();
-        ServerCount.Text = T("Найдено {0}", profiles.Count);
-        if (errors.Count > 0) Diagnostics.Text = string.Join("\n", errors);
-        var selected = profiles.Find(p => p.Path == lastSelectedPath) ?? profiles.FirstOrDefault();
-        if (selected != null) ServerList.SelectedItem = ServerList.Items.OfType<ServerRow>().First(r => r.Profile.Path == selected.Path);
-        else { profile = null; Editor.IsEnabled = false; }
+        loading = true;
+        try
+        {
+            foreach (var obsolete in serverRows.Where(r => !profiles.Any(p => p.Path.Equals(r.Profile.Path, StringComparison.OrdinalIgnoreCase))).ToArray()) serverRows.Remove(obsolete);
+            for (var index = 0; index < profiles.Count; index++)
+            {
+                var found = serverRows.FirstOrDefault(r => r.Profile.Path.Equals(profiles[index].Path, StringComparison.OrdinalIgnoreCase));
+                if (found == null) serverRows.Insert(index, new ServerRow(profiles[index]));
+                else { found.ReplaceProfile(profiles[index]); if (serverRows.IndexOf(found) != index) serverRows.Move(serverRows.IndexOf(found), index); }
+            }
+            ApplyProcessStates();
+            ServerCount.Text = T("Найдено {0}", profiles.Count);
+            var selected = profiles.Find(p => p.Path == lastSelectedPath) ?? profiles.FirstOrDefault();
+            if (selected != null)
+            {
+                ServerList.SelectedItem = ServerList.Items.OfType<ServerRow>().First(r => r.Profile.Path == selected.Path);
+                Load(selected);
+            }
+            else { profile = null; Editor.IsEnabled = false; DeleteServerButton.IsEnabled = false; }
+            if (errors.Count > 0) Diagnostics.Text = string.Join("\n", errors);
+        }
+        finally { loading = false; }
     }
     private void Load(ServerProfile p)
     {
@@ -217,6 +245,7 @@ public partial class MainWindow : Window
             Log.Text = managed.TryGetValue(p.Path, out var server) ? server.Log.ToString() : "";
             lastDiagnostics = null; RenderDiagnostics();
             dirty = false; Status.Text = T("Загружен ") + p.Folder;
+            try { draftBaseline = Build(); } catch (InvalidOperationException) { draftBaseline = null; }
         }
         finally { loading = false; }
     }
@@ -232,7 +261,7 @@ public partial class MainWindow : Window
         MarkDirty();
         if (!loading && (sender == TrackInput || sender == LayoutInput)) UpdateTrack();
     }
-    private bool Discard() => !dirty || AppDialog.Confirm(this, T("Отбросить несохранённые изменения?"), T("Настройки"), "Отбросить");
+    private bool Discard() => !saving && !folderOperation && (!dirty || AppDialog.Confirm(this, T("Отбросить несохранённые изменения?"), T("Настройки"), "Отбросить"));
     private void Fail(Exception e) { Status.Text = e.Message; AppDialog.Notify(this, e.Message, T("Ошибка")); }
     private void UpdateSlots()
     {
@@ -309,7 +338,7 @@ public partial class MainWindow : Window
     }
     private void StoreSettings()
     {
-        try { File.WriteAllText(settingsFile, JsonSerializer.Serialize(new UserSettings(ServerRoot.Text, GameRoot.Text, cmPath, UiText.Language), new JsonSerializerOptions { WriteIndented = true })); }
+        try { Directory.CreateDirectory(Path.GetDirectoryName(settingsFile)!); File.WriteAllText(settingsFile, JsonSerializer.Serialize(new UserSettings(ServerRoot.Text, GameRoot.Text, cmPath, UiText.Language), new JsonSerializerOptions { WriteIndented = true })); }
         catch (Exception e) { Status.Text = T("Настройки приложения не сохранены: ") + e.Message; }
     }
     private Dictionary<string, string> Build()
@@ -349,20 +378,33 @@ public partial class MainWindow : Window
     }
     private async void SaveProfile(object sender, RoutedEventArgs e)
     {
+        try { await SaveProfileAsync(); }
+        catch (Exception ex) { Fail(ex); }
+    }
+    private async Task SaveProfileAsync()
+    {
+        if (profile == null || saving) return;
+        SlotGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+        SlotGrid.CommitEdit(DataGridEditingUnit.Row, true);
+        var p = profile;
+        var draft = dirty ? Build() : null;
+        var texts = draft == null || draftBaseline != null && draft.All(pair => draftBaseline.GetValueOrDefault(pair.Key) == pair.Value) ? p.SavedTexts : draft;
+        var warnings = Warnings(texts); var copies = catalog?.PrepareMissingContent(p, texts) ?? [];
+        saving = true;
+        SaveBusyOverlay.Visibility = Visibility.Visible;
+        Status.Text = T("Сохраняю конфиги и готовлю серверные данные…");
         try
         {
-            var texts = Build(); var warnings = Warnings(texts); var copies = catalog?.PrepareMissingContent(profile!, texts) ?? [];
-            if (warnings.Count > 0 && !AppDialog.Confirm(this, string.Join("\n", warnings.Take(12)) + T("\n\nСохранить несмотря на замечания?"), T("Проверка"), "Сохранить")) return;
-            var p = profile!; Editor.IsEnabled = false; Status.Text = T("Сохраняю конфиги и готовлю серверные данные…");
-            try
-            {
-                var backup = await Task.Run(() => p.Save(texts, copies));
-                Scan();
-                Status.Text = T("Сохранено · подготовлено {0} файлов · бэкап: {1} · для применения нужен перезапуск сервера", copies.Count, backup);
-            }
-            finally { Editor.IsEnabled = true; }
+            var backup = await Task.Run(() => p.Save(texts, copies));
+            if (backup != null) p.AcceptSaved(ServerProfile.Load(p.Path));
+            dirty = false;
+            draftBaseline = draft ?? draftBaseline;
+            foreach (var row in ServerList.Items.OfType<ServerRow>().Where(r => r.Profile.Path == p.Path)) row.RefreshProfile();
+            lastDiagnostics = texts; lastCopies = copies.Count; RenderDiagnostics();
+            Status.Text = backup == null ? T("Изменений нет — новый бэкап не нужен.") : T("Сохранено · подготовлено {0} файлов · бэкап: {1} · для применения нужен перезапуск сервера", copies.Count, backup);
+            if (warnings.Count > 0) Status.Text += T(" · замечаний: {0} — вкладка «Проверка»", warnings.Count);
         }
-        catch (Exception ex) { Fail(ex); }
+        finally { saving = false; SaveBusyOverlay.Visibility = Visibility.Collapsed; }
     }
     private void FitSlots(object sender, RoutedEventArgs e) { if (profile != null) MaxInput.Text = profile.Slots.Count.ToString(); }
     private void GoCars(object sender, RoutedEventArgs e) { Pages.SelectedIndex = 2; CatalogPages.SelectedIndex = 0; }
@@ -496,6 +538,7 @@ public partial class MainWindow : Window
         var ours = managed.TryGetValue(profile.Path, out var server) && !server.Process.HasExited;
         var row = ServerList.Items.OfType<ServerRow>().FirstOrDefault(r => r.Profile.Path.Equals(profile.Path, StringComparison.OrdinalIgnoreCase));
         StartButton.IsEnabled = !ours && row?.IsRunning != true; StopButton.IsEnabled = ours;
+        DeleteServerButton.IsEnabled = !ours && row?.State == ServerRunState.Stopped;
         ProcessStatus.Text = row?.StatusLabel ?? T("Проверяю статус…");
         ProcessStatus.ToolTip = row?.StatusHint;
         ProcessStatus.Foreground = (Brush)new BrushConverter().ConvertFromString(row?.StatusColor ?? "#747D8D")!;
@@ -597,22 +640,40 @@ public partial class MainWindow : Window
     }
     private bool LaunchContentManager(string? connection = null)
     {
-        foreach (var running in Process.GetProcessesByName("Content Manager"))
-        {
-            using (running)
-                try { cmPath = running.MainModule?.FileName ?? cmPath; }
-                catch (Exception ex) when (ex is Win32Exception or InvalidOperationException) { }
-        }
+        cmPath = FindContentManager() ?? "";
         if (!File.Exists(cmPath))
         {
             var chooser = new OpenFileDialog { Title = T("Выберите Content Manager.exe"), Filter = "Content Manager|*.exe" };
             if (chooser.ShowDialog(this) != true) return false;
             cmPath = chooser.FileName;
         }
-        var start = new ProcessStartInfo(cmPath) { UseShellExecute = false };
+        var start = new ProcessStartInfo(cmPath) { UseShellExecute = false, WorkingDirectory = Path.GetDirectoryName(cmPath)! };
         if (connection != null) start.ArgumentList.Add(connection);
         Process.Start(start); StoreSettings();
         return true;
+    }
+    private string? FindContentManager()
+    {
+        var runningPaths = new List<string>();
+        foreach (var running in Process.GetProcessesByName("Content Manager").Concat(Process.GetProcessesByName("ContentManager")))
+        {
+            using (running)
+                try { if (running.MainModule?.FileName is { } path) runningPaths.Add(path); }
+                catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or UnauthorizedAccessException) { }
+        }
+        var commands = new List<string>();
+        foreach (var hive in new[] { Registry.CurrentUser, Registry.ClassesRoot })
+        {
+            try
+            {
+                using var key = hive.OpenSubKey(hive == Registry.CurrentUser ? @"Software\Classes\acmanager\shell\open\command" : @"acmanager\shell\open\command");
+                if (key?.GetValue("") is string command) commands.Add(command);
+            }
+            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException) { }
+        }
+        return ContentManagerLocator.Find(cmPath, runningPaths, commands, [AppContext.BaseDirectory, GameRoot.Text,
+            Environment.GetFolderPath(Environment.SpecialFolder.Desktop), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)]);
     }
     private void WindowClosing(object? sender, CancelEventArgs e)
     {
@@ -634,6 +695,7 @@ public partial class MainWindow : Window
     private void CloseWindow(object sender, RoutedEventArgs e) => Close();
     public async Task SmokeTest(string destination)
     {
+        LanguagePicker.SelectedIndex = 0;
         await InitializeAsync();
         if (profile == null || catalog == null) throw new InvalidOperationException("Smoke test: не загружены профили или каталог.");
         foreach (var p in ServerList.Items.OfType<ServerRow>().Select(r => r.Profile))
@@ -663,21 +725,21 @@ public partial class MainWindow : Window
         var oldSnapshot = processSnapshot;
         processSnapshot = new(new Dictionary<string, int[]>(StringComparer.OrdinalIgnoreCase) { [selected.Path.ToUpperInvariant()] = [12345] }, false);
         UpdateProcess();
-        if (selectedRow.State != ServerRunState.External || StartButton.IsEnabled || StopButton.IsEnabled
+        if (selectedRow.State != ServerRunState.External || StartButton.IsEnabled || StopButton.IsEnabled || DeleteServerButton.IsEnabled
             || ServerList.Items.OfType<ServerRow>().Count(r => r.IsRunning) != 1) throw new InvalidOperationException("External process was assigned to an incorrect profile or exposed management controls.");
         using (var fakeManagedProcess = Process.GetCurrentProcess())
         {
             var fakeManaged = new ManagedServer(fakeManagedProcess); managed[selected.Path] = fakeManaged;
             UpdateProcess();
-            if (selectedRow.State != ServerRunState.Starting || !StopButton.IsEnabled) throw new InvalidOperationException("Managed starting status failed.");
+            if (selectedRow.State != ServerRunState.Starting || !StopButton.IsEnabled || DeleteServerButton.IsEnabled) throw new InvalidOperationException("Managed starting status failed.");
             fakeManaged.Starting = false; UpdateProcess();
-            if (selectedRow.State != ServerRunState.Managed) throw new InvalidOperationException("Managed running status failed.");
+            if (selectedRow.State != ServerRunState.Managed || DeleteServerButton.IsEnabled) throw new InvalidOperationException("Managed running status failed.");
             managed.Remove(selected.Path);
         }
         processSnapshot = new(new Dictionary<string, int[]>(), true); UpdateProcess();
-        if (selectedRow.State != ServerRunState.Unknown) throw new InvalidOperationException("Unreadable process paths were reported as stopped.");
+        if (selectedRow.State != ServerRunState.Unknown || DeleteServerButton.IsEnabled) throw new InvalidOperationException("Unreadable process paths were reported as stopped.");
         processSnapshot = new(new Dictionary<string, int[]>(), false); UpdateProcess();
-        if (selectedRow.State != ServerRunState.Stopped || !StartButton.IsEnabled) throw new InvalidOperationException("Process exit did not update the server status.");
+        if (selectedRow.State != ServerRunState.Stopped || !StartButton.IsEnabled || !DeleteServerButton.IsEnabled) throw new InvalidOperationException("Process exit did not update the server status.");
         LanguagePicker.SelectedIndex = 1;
         if (selectedRow.StatusLabel != "Stopped") throw new InvalidOperationException("Runtime status did not switch language.");
         LanguagePicker.SelectedIndex = 0; processSnapshot = oldSnapshot; UpdateProcess();
@@ -737,7 +799,7 @@ public partial class MainWindow : Window
             throw new InvalidOperationException($"Live English labels did not update: tab={((TabItem)Pages.Items[0]).Header}; column={RoleColumn.Header}; role={RoleChoices[0].Name}; summary={SlotSummary.Text}.");
         var legacySettings = JsonSerializer.Deserialize<UserSettings>("{\"ServersRoot\":\"servers\",\"GameRoot\":\"game\",\"ContentManager\":\"cm\"}");
         var savedSettings = JsonSerializer.Deserialize<UserSettings>(JsonSerializer.Serialize(new UserSettings("servers", "game", "cm", "en")));
-        if (legacySettings?.Language != "ru" || savedSettings?.Language != "en") throw new InvalidOperationException("Language preference serialization failed.");
+        if (legacySettings?.Language != "en" || savedSettings?.Language != "en") throw new InvalidOperationException("Language preference serialization failed.");
         LanguagePicker.SelectedIndex = 0;
         if (!dirty || (string)((TabItem)Pages.Items[0]).Header != "Обзор" || !draft.All(kv => Build()[kv.Key] == kv.Value))
             throw new InvalidOperationException("Switch back to Russian changed the draft.");
