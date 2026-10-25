@@ -1,4 +1,4 @@
-# AC Server Manager 0.6.0 Preview
+# AC Server Manager 0.6.1 Preview
 
 A Windows application built with C#, WPF and .NET 10. PowerShell is only used for building and packaging.
 
@@ -14,9 +14,9 @@ Maximizing uses the native window frame with custom styling through WindowChrome
 
 ## Getting started
 
-This guide covers version **0.6.0-preview**. Available Windows x64 packages are listed in [Releases](https://github.com/drkreis/ac-server-manager/releases); a source checkout may be newer than a published package. Extract the entire portable archive into a writable folder and run `AssettoServerManager.exe`; .NET is included. Keep the DLLs and other files alongside the EXE.
+This guide covers version **0.6.1-preview**. Available Windows x64 packages are listed in [Releases](https://github.com/drkreis/ac-server-manager/releases); a source checkout may be newer than a published package. Extract the entire portable archive into a writable folder and run `AssettoServerManager.exe`; .NET is included. Keep the DLLs and other files alongside the EXE.
 
-For a local build from source, double-click `Start-Manager.cmd` or `artifacts/desktop-0.6.0/AssettoServerManager.exe`. This regular build requires the .NET 10 Desktop Runtime x64.
+For a local build from source, double-click `Start-Manager.cmd` or `artifacts/desktop-0.6.1/AssettoServerManager.exe`. This regular build requires the .NET 10 Desktop Runtime x64.
 
 Building requires the .NET 10 SDK. The script uses the local SDK in `.tools/dotnet` if available, otherwise `dotnet` from PATH. Visual Studio is not required; the SDK and cache are excluded from Git. See [README.md](README.md) for build and portable packaging commands.
 
@@ -79,9 +79,9 @@ Presets and server cloning; packing unpacked data into `data.acd`; updating exis
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tests
-.\artifacts\desktop-0.6.0\AssettoServerManager.exe --smoke .\artifacts\qa --servers-root 'D:\AC Servers'
-.\artifacts\desktop-0.6.0\AssettoServerManager.exe --window-qa .\artifacts\window-qa --servers-root 'D:\AC Servers'
-.\artifacts\desktop-0.6.0\AssettoServerManager.exe --ui-qa .\artifacts\details-qa
+.\artifacts\desktop-0.6.1\AssettoServerManager.exe --smoke .\artifacts\qa --servers-root 'D:\AC Servers'
+.\artifacts\desktop-0.6.1\AssettoServerManager.exe --window-qa .\artifacts\window-qa --servers-root 'D:\AC Servers'
+.\artifacts\desktop-0.6.1\AssettoServerManager.exe --ui-qa .\artifacts\details-qa
 ```
 
 Core tests use temporary servers and check messages in both languages, slot reordering with field preservation, and mod metadata parsing. The smoke test reads real profiles and the catalog, exercises UI actions in memory, checks RU / EN switching while preserving drafts, and verifies language settings compatibility. It renders PNG screenshots in both languages. `--window-qa` additionally shows a test window, checks actual maximize/restore behavior, content bounds and modal dialog button results. These checks do not write live configurations or start servers. The build uses the local SDK or an SDK from PATH.
@@ -97,3 +97,11 @@ The server log is bounded and refreshed at most five times per second rather tha
 **Save report** is available in the status bar even without a selected server. The text report includes application/runtime versions, process states, manager errors and recent output from the selected server. Configuration and game files are not attached. Known password/token/key/identity fields and selected local paths are redacted; review the text before sharing because arbitrary plugin output may contain other private values. Reports are saved locally and never uploaded automatically.
 
 Manager errors are retained in `%LOCALAPPDATA%\ACServerManager\logs\manager-errors.log` and one rotated `.previous` file. QA modes keep their logs under their own output folder. See [RELIABILITY.md](RELIABILITY.md) for isolated process checks and remaining limits.
+
+## Changing folders in 0.6.1
+
+Choosing a new servers folder refreshes its list immediately without reloading game content. When typing or pasting either folder path, press **Enter** or leave the field to apply it; **Escape** restores the applied path. A nonexistent or inaccessible path is rejected and the previous path/profile is retained. Equivalent paths differing only in case or a trailing separator do not reload the draft.
+
+A server-folder change asks before discarding unsaved server edits. Cancel restores the previous folder path and preserves the draft. An empty or unset server folder clears the selected profile, fields, slots, track preview, diagnostics and log. The editor is replaced by a create/select prompt; Create server, Browse and Save report remain available. Already running managed servers continue running and remain tracked, including when they are outside the currently displayed root.
+
+Changing the game folder reloads its catalog. Clearing it removes the previous catalog and previews. Saved preferences use applied paths, not an unfinished edit in a path field. These changes react to folder selection or path confirmation; they do not watch external filesystem changes continuously.

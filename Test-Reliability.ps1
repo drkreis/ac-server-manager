@@ -31,6 +31,18 @@ try {
         throw ('Runtime reliability checks failed: ' + $process.ExitCode)
     }
     Get-Content -LiteralPath (Join-Path $results 'runtime-result.txt')
+    $folderResults = Join-Path $OutputDirectory 'folder-results'
+    $folderProcess = Start-Process -FilePath $app -ArgumentList @('--folder-qa', ('"' + $folderResults + '"')) -WindowStyle Hidden -PassThru
+    try {
+        if (-not $folderProcess.WaitForExit(60000)) { $folderProcess.Kill(); throw 'Folder UI checks exceeded one minute.' }
+        if ($folderProcess.ExitCode -ne 0) {
+            $errorFile = Join-Path $folderResults 'smoke-error.txt'
+            if (Test-Path -LiteralPath $errorFile) { Get-Content -LiteralPath $errorFile }
+            throw ('Folder UI checks failed: ' + $folderProcess.ExitCode)
+        }
+        Get-Content -LiteralPath (Join-Path $folderResults 'folder-result.txt')
+    }
+    finally { $folderProcess.Dispose() }
 }
 finally {
     # Also handle a manager crash before its own finally can finish. Only the fresh test output is eligible.

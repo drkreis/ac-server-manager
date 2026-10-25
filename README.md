@@ -1,6 +1,6 @@
 # AC Server Manager
 
-**v0.6.0 · Preview** is a Windows application for creating and configuring local [AssettoServer](https://assettoserver.org/) installations. Its main use case is free roam with friends and AI traffic. This is the source version; available download versions are listed in Releases and may differ from the current checkout.
+**v0.6.1 · Preview** is a Windows application for creating and configuring local [AssettoServer](https://assettoserver.org/) installations. Its main use case is free roam with friends and AI traffic. This is the source version; available download versions are listed in Releases and may differ from the current checkout.
 
 The interface is available in Russian and English. The application is built with C#, WPF and .NET 10.
 
@@ -8,6 +8,7 @@ The interface is available in Russian and English. The application is built with
 
 - A five-step server creation wizard: install AssettoServer, select a track and layout, add cars and slots, configure basic settings, and review before creating.
 - Download the official stable Windows x64 AssettoServer release, or install from a local ZIP or program folder. Configurations are generated from scratch.
+- Automatic server-list refresh when a chosen folder changes, or a typed path is confirmed with Enter or focus loss. Empty folders show a clear create/select state.
 - Server discovery and import of `server_cfg.ini`, `entry_list.ini` and `extra_cfg.yml`.
 - Track, layout, password, port, slot, AI and WeatherFX settings.
 - A catalog of installed cars and tracks with previews; layouts are selected in the track details panel.
@@ -38,7 +39,7 @@ Building on Windows requires the **.NET 10 SDK**, available through [Microsoft's
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tests
 ```
 
-The output is placed in `artifacts/desktop-0.6.0/`. The build script derives the default folder from the project's version; you can override it with `-OutputDirectory`. Run `Start-Manager.cmd` from the project root or `AssettoServerManager.exe` from the output folder. Keep the DLLs and other build files alongside the EXE.
+The output is placed in `artifacts/desktop-0.6.1/`. The build script derives the default folder from the project's version; you can override it with `-OutputDirectory`. Run `Start-Manager.cmd` from the project root or `AssettoServerManager.exe` from the output folder. Keep the DLLs and other build files alongside the EXE.
 
 The script uses the local SDK in `.tools/dotnet` if available, otherwise `dotnet` from PATH. Visual Studio is not required.
 
@@ -57,9 +58,9 @@ The script runs the core tests, publishes the Windows x64 application with .NET 
 Additional UI checks use local game and server installations:
 
 ```powershell
-.\artifacts\desktop-0.6.0\AssettoServerManager.exe --smoke .\artifacts\qa --servers-root 'D:\AC Servers'
-.\artifacts\desktop-0.6.0\AssettoServerManager.exe --window-qa .\artifacts\window-qa --servers-root 'D:\AC Servers'
-.\artifacts\desktop-0.6.0\AssettoServerManager.exe --ui-qa .\artifacts\details-qa
+.\artifacts\desktop-0.6.1\AssettoServerManager.exe --smoke .\artifacts\qa --servers-root 'D:\AC Servers'
+.\artifacts\desktop-0.6.1\AssettoServerManager.exe --window-qa .\artifacts\window-qa --servers-root 'D:\AC Servers'
+.\artifacts\desktop-0.6.1\AssettoServerManager.exe --ui-qa .\artifacts\details-qa
 ```
 
 Replace `D:\AC Servers` with your own fixture server location. Use `--game-root <path>` if Steam detection is unavailable. Smoke/window checks read the catalog and configurations, exercise drafts in memory and generate PNG screenshots. `--ui-qa` additionally checks fresh startup, actual caret/placeholder coordinates, the car details dialog, stable save controls, unchanged/reverted saves without new backups, failed-save draft preservation, inline validation notices, folder rename and context-menu process guards, and shared settings/Content Manager recovery. Writes are limited to disposable fixtures under its output folder. These checks do not write live configurations or start servers. They are not intended for a clean machine without game content.

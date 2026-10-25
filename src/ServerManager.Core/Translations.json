@@ -1073,5 +1073,11 @@
   "ReportSaved": {"En":"Report saved.","Ru":"Отчёт сохранён."},
   "FollowLog": {"En":"Follow log","Ru":"Следить за журналом"},
   "ReportHint": {"En":"Version, manager errors and recent output from the selected server. Configuration files are excluded and known secrets are redacted. Review the text before sharing.","Ru":"Версия, ошибки менеджера и последние сообщения выбранного сервера. Конфиги не прикладываются; известные секреты скрываются. Проверьте текст перед отправкой."},
-  "OccupiedServerPorts": {"Ru":"Порты заняты или недоступны: {0}. Остановите использующий их сервер или измените настройки.","En":"Ports in use or unavailable: {0}. Stop the server using them or change the settings."}
+  "OccupiedServerPorts": {"Ru":"Порты заняты или недоступны: {0}. Остановите использующий их сервер или измените настройки.","En":"Ports in use or unavailable: {0}. Stop the server using them or change the settings."},
+  "EmptyServersTitle": {"En":"No servers found","Ru":"Серверы не найдены"},
+  "EmptyServersHint": {"En":"Choose a folder with existing servers or create a new server.","Ru":"Выберите папку с существующими серверами или создайте новый сервер."},
+  "ChooseServersFolder": {"En":"Choose servers folder","Ru":"Выбрать папку серверов"},
+  "FolderUnavailable": {"En":"Folder not found or unavailable: {0}","Ru":"Папка не найдена или недоступна: {0}"},
+  "EmptyFolderStatus": {"En":"No servers found in the selected folder.","Ru":"В выбранной папке серверы не найдены."},
+  "RefreshingServers": {"En":"Refreshing server list…","Ru":"Обновляю список серверов…"}
 }

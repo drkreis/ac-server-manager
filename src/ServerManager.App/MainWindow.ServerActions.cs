@@ -70,7 +70,7 @@ public partial class MainWindow
             if (profile == row.Profile)
             {
                 lastSelectedPath = target; ProfileTitle.Text = row.Folder;
-                if (ServerRoot.Text.TrimEnd('\\').Equals(oldPath.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase)) ServerRoot.Text = target;
+                if (ServerRoot.Text.TrimEnd('\\').Equals(oldPath.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase)) { ServerRoot.Text = target; appliedServerRoot = target; }
             }
             row.RefreshProfile(); UpdateProcess();
             if (!IsTestMode) StoreSettings();
@@ -131,7 +131,7 @@ public partial class MainWindow
     {
         if (profile?.Path == path)
         {
-            dirty = false; profile = null; lastSelectedPath = ""; SlotGrid.ItemsSource = null;
+            ClearProfile();
             Scan();
         }
         else

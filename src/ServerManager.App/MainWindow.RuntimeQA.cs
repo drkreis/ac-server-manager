@@ -60,6 +60,13 @@ public partial class MainWindow
             var one = await Start(first, "ready"); var two = await Start(second, "ready");
             await Task.WhenAll(one.Startup, two.Startup);
             Check(one.Ready && two.Ready, "Two independent servers did not become ready.");
+            var emptyRoot = Path.Combine(output, "empty-root"); Directory.CreateDirectory(emptyRoot);
+            ServerRoot.Text = emptyRoot;
+            Check(await CommitFolderAsync(ServerRoot) && profile == null && !one.Process.HasExited && !two.Process.HasExited && managed.Count == 2,
+                "Changing to an empty root stopped or lost ownership of running servers.");
+            ServerRoot.Text = root;
+            Check(await CommitFolderAsync(ServerRoot) && managed[first.Path] == one && managed[second.Path] == two,
+                "Returning to the server root lost tracked processes.");
             var duplicateRejected = false;
             try { await LaunchManagedAsync(first); } catch (InvalidOperationException) { duplicateRejected = true; }
             Check(duplicateRejected && managed[first.Path] == one, "A duplicate start replaced the owned process.");
@@ -140,7 +147,7 @@ public partial class MainWindow
 
             AppDiagnostics.Record(new IOException("PASSWORD=qa-private-secret"), "Runtime QA");
             var report = BuildReport();
-            Check(!report.Contains("qa-private-secret") && !report.Contains(root) && report.Contains("0.6.0"), "Report leaked private fixture data or lost version.");
+            Check(!report.Contains("qa-private-secret") && !report.Contains(root) && report.Contains("Version: " + typeof(App).Assembly.GetName().Version!.ToString(3)), "Report leaked private fixture data or lost version.");
             File.WriteAllText(Path.Combine(output, "report-example.txt"), report);
             completed.AppendLine("PASS: report version, private-path replacement and secret redaction.");
             saving = true;

@@ -92,7 +92,7 @@ public partial class MainWindow : Window
     private string slotFilter = "all", cmPath = "", lastSelectedPath = "";
     private readonly string settingsFile;
     private readonly string[] args;
-    private bool IsTestMode => args.Contains("--ui-qa") || args.Contains("--smoke") || args.Contains("--window-qa") || args.Contains("--wizard-qa") || args.Contains("--wizard-download-qa") || args.Contains("--runtime-qa");
+    private bool IsTestMode => args.Contains("--ui-qa") || args.Contains("--smoke") || args.Contains("--window-qa") || args.Contains("--wizard-qa") || args.Contains("--wizard-download-qa") || args.Contains("--runtime-qa") || args.Contains("--folder-qa");
     private Dictionary<string, string>? lastDiagnostics;
     private Dictionary<string, string>? draftBaseline;
     private int lastCopies;
@@ -119,6 +119,7 @@ public partial class MainWindow : Window
             ServerRoot.Text = Option("--servers-root") ?? ServerRoot.Text;
             GameRoot.Text = Option("--game-root") ?? GameRoot.Text;
         }
+        appliedServerRoot = ServerRoot.Text; appliedGameRoot = GameRoot.Text;
         Loaded += async (_, _) => { if (!IsTestMode) { await InitializeAsync(); StoreSettings(); } };
         Closing += WindowClosing;
         processTimer.Tick += async (_, _) => await RefreshProcessStatesAsync();
@@ -165,6 +166,7 @@ public partial class MainWindow : Window
     }
     public async Task InitializeAsync()
     {
+        folderOperation = true; SaveBusyOverlay.Visibility = Visibility.Visible;
         Editor.IsEnabled = false;
         Status.Text = T("Читаю установленный контент…");
         try
@@ -172,16 +174,17 @@ public partial class MainWindow : Window
             if (Directory.Exists(GameRoot.Text))
             {
                 var path = GameRoot.Text;
-                catalog = await Task.Run(() => ContentCatalog.Load(path));
-                SkinListConverter.Catalog = catalog;
-                CarList.ItemsSource = catalog.Cars; TrackList.ItemsSource = catalog.TrackGroups;
+                AssignCatalog(await Task.Run(() => ContentCatalog.Load(path)));
             }
+            else AssignCatalog(null);
+            appliedGameRoot = GameRoot.Text;
             Scan();
             if (!IsTestMode) { await RefreshProcessStatesAsync(); processTimer.Start(); }
             Status.Text = string.IsNullOrWhiteSpace(ServerRoot.Text) ? T("Выберите папку серверов или создайте первый сервер.")
                 : catalog == null ? T("Укажите папку игры для каталога.") : T("Каталог: {0} машин · {1} вариантов трасс · замечаний к метаданным: {2}", catalog.Cars.Count, catalog.Tracks.Count, catalog.Warnings.Count);
         }
         catch (Exception e) { Fail(e); }
+        finally { folderOperation = false; SaveBusyOverlay.Visibility = Visibility.Collapsed; }
     }
     private async void ReloadCatalog(object sender, RoutedEventArgs e)
     {
@@ -213,6 +216,11 @@ public partial class MainWindow : Window
     {
         var errors = new List<string>();
         var profiles = Directory.Exists(ServerRoot.Text) ? ServerProfile.Discover(ServerRoot.Text, errors) : [];
+        ApplyProfiles(profiles, errors);
+    }
+    private void ApplyProfiles(List<ServerProfile> profiles, List<string> errors)
+    {
+        var wasLoading = loading;
         loading = true;
         try
         {
@@ -225,23 +233,26 @@ public partial class MainWindow : Window
             }
             ApplyProcessStates();
             ServerCount.Text = T("Найдено {0}", profiles.Count);
-            var selected = profiles.Find(p => p.Path == lastSelectedPath) ?? profiles.FirstOrDefault();
+            var selected = profiles.Find(p => p.Path.Equals(lastSelectedPath, StringComparison.OrdinalIgnoreCase)) ?? profiles.FirstOrDefault();
             if (selected != null)
             {
                 ServerList.SelectedItem = ServerList.Items.OfType<ServerRow>().First(r => r.Profile.Path == selected.Path);
                 Load(selected);
             }
-            else { profile = null; Editor.IsEnabled = false; DeleteServerButton.IsEnabled = false; }
+            else ClearProfile(errors);
+            appliedServerRoot = ServerRoot.Text;
             if (errors.Count > 0) Diagnostics.Text = string.Join("\n", errors);
         }
-        finally { loading = false; }
+        finally { loading = wasLoading; }
     }
     private void Load(ServerProfile p)
     {
+        var wasLoading = loading;
         loading = true;
         try
         {
-            profile = p; lastSelectedPath = p.Path; Editor.IsEnabled = true;
+            UnsubscribeProfile();
+            profile = p; lastSelectedPath = p.Path; Editor.IsEnabled = true; Editor.Visibility = Visibility.Visible; EmptyServerState.Visibility = Visibility.Collapsed;
             ProfileTitle.Text = p.Folder;
             var map = new Dictionary<TextBox, string> { [NameInput]="NAME", [TrackInput]="TRACK", [LayoutInput]="CONFIG_TRACK", [MaxInput]="MAX_CLIENTS", [TcpInput]="TCP_PORT", [UdpInput]="UDP_PORT", [HttpInput]="HTTP_PORT", [FuelInput]="FUEL_RATE", [DamageInput]="DAMAGE_MULTIPLIER", [TyresInput]="TYRE_WEAR_RATE" };
             foreach (var (box, key) in map) box.Text = ConfigText.Get(p.Ini, "SERVER", key);
@@ -251,7 +262,8 @@ public partial class MainWindow : Window
             LobbyInput.IsChecked = ConfigText.Get(p.Ini, "SERVER", "REGISTER_TO_LOBBY") == "1";
             SkinListConverter.Imported = p.Slots.GroupBy(s => s.Model).ToDictionary(g => g.Key, g => g.Select(s => s.Skin).Distinct().ToList());
             foreach (var slot in p.Slots) slot.PropertyChanged += SlotChanged;
-            p.Slots.CollectionChanged += (_, _) => { if (!loading) MarkDirty(); UpdateSlots(); };
+            profileSlotsChanged = (_, _) => { if (!loading) MarkDirty(); UpdateSlots(); };
+            p.Slots.CollectionChanged += profileSlotsChanged;
             SlotGrid.ItemsSource = p.Slots;
             FilterSlots(slotFilter);
             UpdateSlots(); UpdateTrack(); UpdateProcess();
@@ -260,7 +272,7 @@ public partial class MainWindow : Window
             dirty = false; Status.Text = T("Загружен ") + p.Folder;
             try { draftBaseline = Build(); } catch (InvalidOperationException) { draftBaseline = null; }
         }
-        finally { loading = false; }
+        finally { loading = wasLoading; }
     }
     private void SlotChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -284,6 +296,13 @@ public partial class MainWindow : Window
     }
     private void UpdateTrack()
     {
+        if (profile == null)
+        {
+            CurrentTrackName.Text = ""; TrackDetails.Text = ""; TrackPreview.Source = null;
+            TrackLayoutPicker.ItemsSource = null; TrackLayoutPicker.Visibility = Visibility.Collapsed;
+            TrackLayoutNote.Text = ""; TrackLayoutNote.Visibility = Visibility.Collapsed;
+            return;
+        }
         var track = catalog?.FindTrack(TrackInput.Text, LayoutInput.Text);
         CurrentTrackName.Text = track?.Name ?? TrackInput.Text;
         TrackDetails.Text = track == null ? LayoutInput.Text + T(" · нет в каталоге игры") : track.Layout + (track.PitBoxes != null ? T(" · {0} пит-боксов", track.PitBoxes) : "");
@@ -333,25 +352,39 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { Fail(ex); }
     }
-    private void RefreshServers(object sender, RoutedEventArgs e) { if (Discard()) try { Scan(); } catch (Exception ex) { Fail(ex); } }
+    private async void RefreshServers(object sender, RoutedEventArgs e)
+    {
+        if (!SameFolder(ServerRoot.Text, appliedServerRoot)) { await CommitFolderAsync(ServerRoot); return; }
+        if (Discard()) try { Scan(); } catch (Exception ex) { Fail(ex); }
+    }
     private void ReloadProfile(object sender, RoutedEventArgs e) { if (profile != null && Discard()) try { Load(ServerProfile.Load(profile.Path)); } catch (Exception ex) { Fail(ex); } }
     private async void BrowseServers(object sender, RoutedEventArgs e)
     {
-        if (!Discard()) return;
-        var dialog = new OpenFolderDialog { Title = T("Папка серверов или один сервер") };
-        if (dialog.ShowDialog(this) != true) return;
-        ServerRoot.Text = dialog.FolderName; await InitializeAsync(); StoreSettings();
+        if (saving || folderOperation || browsingFolder) return;
+        browsingFolder = true;
+        try
+        {
+            var dialog = new OpenFolderDialog { Title = T("Папка серверов или один сервер") };
+            if (dialog.ShowDialog(this) != true) { ServerRoot.Text = appliedServerRoot; return; }
+            ServerRoot.Text = dialog.FolderName; await CommitFolderAsync(ServerRoot);
+        }
+        finally { browsingFolder = false; }
     }
     private async void BrowseGame(object sender, RoutedEventArgs e)
     {
-        if (!Discard()) return;
-        var dialog = new OpenFolderDialog { Title = T("Корневая папка Assetto Corsa") };
-        if (dialog.ShowDialog(this) != true) return;
-        GameRoot.Text = dialog.FolderName; await InitializeAsync(); StoreSettings();
+        if (saving || folderOperation || browsingFolder) return;
+        browsingFolder = true;
+        try
+        {
+            var dialog = new OpenFolderDialog { Title = T("Корневая папка Assetto Corsa") };
+            if (dialog.ShowDialog(this) != true) { GameRoot.Text = appliedGameRoot; return; }
+            GameRoot.Text = dialog.FolderName; await CommitFolderAsync(GameRoot);
+        }
+        finally { browsingFolder = false; }
     }
     private void StoreSettings()
     {
-        try { SafeJsonStore.Save(settingsFile, new UserSettings(ServerRoot.Text, GameRoot.Text, cmPath, UiText.Language), ManagerSettings.Valid); }
+        try { SafeJsonStore.Save(settingsFile, new UserSettings(appliedServerRoot, appliedGameRoot, cmPath, UiText.Language), ManagerSettings.Valid); }
         catch (Exception e) { AppDiagnostics.Record(e, "Saving settings"); Status.Text = T("Настройки приложения не сохранены: ") + e.Message; }
     }
     private Dictionary<string, string> Build()
@@ -379,6 +412,7 @@ public partial class MainWindow : Window
     }
     private void RenderDiagnostics()
     {
+        if (profile == null) { Diagnostics.Clear(); return; }
         if (lastDiagnostics == null)
         {
             Diagnostics.Text = T("Проверка охватывает конфиги и установленный контент. Доступность из интернета проверяется отдельно.");
@@ -396,7 +430,7 @@ public partial class MainWindow : Window
     }
     private async Task SaveProfileAsync()
     {
-        if (profile == null || saving) return;
+        if (profile == null || saving || folderOperation) return;
         SlotGrid.CommitEdit(DataGridEditingUnit.Cell, true);
         SlotGrid.CommitEdit(DataGridEditingUnit.Row, true);
         var p = profile;
@@ -487,7 +521,11 @@ public partial class MainWindow : Window
     }
     private void CarSelected(object sender, SelectionChangedEventArgs e)
     {
-        if (CarList.SelectedItem is not CarInfo car) return;
+        if (CarList.SelectedItem is not CarInfo car)
+        {
+            CarTitle.Text = T("Выберите машину"); CarMeta.Text = ""; CarPreview.Source = null; SkinPicker.ItemsSource = null;
+            return;
+        }
         CarTitle.Text = car.Name; CarMeta.Text = car.Id + T("\n{0} скинов", car.Skins.Count);
         CarPreview.Source = FileImageConverter.Load(car.Preview); SkinPicker.ItemsSource = car.Skins; SkinPicker.SelectedIndex = 0;
     }
