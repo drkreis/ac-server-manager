@@ -21,12 +21,6 @@ The manager executable retains the name `AssettoServerManager.exe` even though t
 | File | Responsibility |
 | --- | --- |
 | `README.md` | Public introduction, features, download and build instructions. GitHub displays this on the repository home page. |
-| `CONTRIBUTING.md` | Contributor workflow, appropriate checks, code/documentation conventions and pull request guidance. |
-| `CODE_OF_CONDUCT.md` | Community expectations, moderation and GitHub Report content / Report abuse guidance. |
-| `SECURITY.md` | Supported-version policy and private vulnerability reporting instructions. |
-| `ACCESSIBILITY.md` | Current interface support, known barriers and accessibility feedback route. |
-| `.github/ISSUE_TEMPLATE/` | Public bug, feature and accessibility forms, plus links to private security reporting and help. |
-| `.github/PULL_REQUEST_TEMPLATE.md` | Pull request description and validation checklist. |
 | `DESKTOP.md` | Guide to the main editor, catalog, process status, saving and recovery. |
 | `WIZARD.md` | Five-step walkthrough for creating a new server. |
 | `PROJECT.md` | This file: architecture, file map, builds and publishing. |

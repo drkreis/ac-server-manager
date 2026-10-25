@@ -118,12 +118,6 @@ On pushes and pull requests, [GitHub Actions](https://github.com/drkreis/ac-serv
 
 The SDK, builds, settings, logs, backups, server configurations and game content are excluded by `.gitignore`. The old prototype and intermediate outputs were moved to the local `.local-archive/` folder, which is also excluded from Git.
 
-## Community
-
-Report bugs, suggest features or describe accessibility barriers through the [issue forms](https://github.com/drkreis/ac-server-manager/issues/new/choose). See the [contributing guide](https://github.com/drkreis/ac-server-manager/blob/master/CONTRIBUTING.md), [Code of Conduct](https://github.com/drkreis/ac-server-manager/blob/master/CODE_OF_CONDUCT.md) and [accessibility notes](https://github.com/drkreis/ac-server-manager/blob/master/ACCESSIBILITY.md).
-
-For security vulnerabilities, follow the [security policy](https://github.com/drkreis/ac-server-manager/blob/master/SECURITY.md) and use private reporting instead of a public issue.
-
 ## Preview status
 
 This version has been tested on a local Windows 11 x64 installation. The wizard creates free-roam practice servers and installs AssettoServer separately from the application. Presets, server cloning, a complete weather/AI/plugin editor, port forwarding and external connectivity checks are not available yet. A suitable AI spline is required for traffic; the presence of a spline alone does not confirm its suitability.
