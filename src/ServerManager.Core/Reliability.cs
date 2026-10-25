@@ -52,6 +52,8 @@ public static class SafeJsonStore
 
 public static partial class DiagnosticSanitizer
 {
+    [GeneratedRegex("""(?m)^([ \t]*)(["']?[\w.-]*(?:password|token|secret|api[ _-]?key|authorization|guid|steam[ _-]?id)[\w.-]*["']?\s*:\s*)[|>][+\-0-9]*[^\r\n]*\r?\n(?:\1[ \t]+[^\r\n]*(?:\r?\n|$)|[ \t]*\r?\n)*""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, 1000)]
+    private static partial Regex SecretBlocks();
     [GeneratedRegex("""(?im)(["']?[\w.-]*(?:password|token|secret|api[ _-]?key|authorization|guid|steam[ _-]?id)[\w.-]*["']?\s*[:=]\s*)(?:"(?:\\.|[^"\\])*"|'(?:''|\\.|[^'\\])*'|[^\r\n]+)""", RegexOptions.CultureInvariant, 1000)]
     private static partial Regex Secrets();
     [GeneratedRegex("(?i)(?:Bearer|Basic)\\s+[a-z0-9+/=._-]+", RegexOptions.CultureInvariant, 1000)]
@@ -63,6 +65,7 @@ public static partial class DiagnosticSanitizer
     {
         try
         {
+            text = SecretBlocks().Replace(text, "$1$2[redacted]\n");
             text = Secrets().Replace(text, "$1[redacted]");
             text = Authentication().Replace(text, "[redacted authentication]");
             text = SteamIdentities().Replace(text, "[redacted identity]");

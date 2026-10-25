@@ -1,6 +1,6 @@
 # AC Server Manager: project guide
 
-This guide describes source version **0.6.1-preview**, its files and the steps for publishing it manually. All paths below are relative to the project root unless stated otherwise.
+This guide describes source version **0.7.0-preview**, its files and the steps for publishing it manually. All paths below are relative to the project root unless stated otherwise.
 
 ## Source, application and game server
 
@@ -9,7 +9,7 @@ There are three separate things:
 | Location | Contents | Purpose |
 | --- | --- | --- |
 | This repository | C# source, XAML interface, translations, tests, scripts and documentation | Develop and build AC Server Manager. |
-| `artifacts/desktop-0.6.1/` or an extracted portable package | `AssettoServerManager.exe`, application DLLs and dependencies | Run the manager. A portable package also includes .NET. |
+| `artifacts/desktop-0.7.0/` or an extracted portable package | `AssettoServerManager.exe`, application DLLs and dependencies | Run the manager. A portable package also includes .NET. |
 | Your chosen server folder, for example `Desktop/AC Servers/<server>/` | `AssettoServer.exe`, `cfg/`, server content and plugins | Run an actual Assetto Corsa server. This is outside the repository. |
 
 The manager executable retains the name `AssettoServerManager.exe` even though the product is called **AC Server Manager**. It is a different program from **AssettoServer.exe**. The game and Content Manager are also separate applications.
@@ -24,13 +24,13 @@ The manager executable retains the name `AssettoServerManager.exe` even though t
 | `DESKTOP.md` | Guide to the main editor, catalog, process status, saving and recovery. |
 | `WIZARD.md` | Five-step walkthrough for creating a new server. |
 | `PROJECT.md` | This file: architecture, file map, builds and publishing. |
-| `RELIABILITY.md` | Current 0.6 reliability scope, isolated process test instructions and known limits. |
+| `RELIABILITY.md` | Current 0.7 reliability, diagnostics and recovery scope, isolated process test instructions and known limits. |
 | `Test-Reliability.ps1` | Builds disposable test processes and runs the manager lifecycle tests without a game installation. |
 | `LICENSE` | The project's MIT license, copyright 2026 drkreis. Bundled runtimes have their own notices. |
 | `ACServerManager.slnx` | XML solution listing the app, core and test projects. An IDE can open it as one workspace. It does not launch the application. |
 | `Build-Desktop.ps1` | Builds the Windows app; `-Tests` also runs core tests. Uses `.tools/dotnet` if present, otherwise the SDK on PATH. |
 | `Publish-Desktop.ps1` | Runs core tests, builds a portable Windows x64 package, copies guides/licenses and writes the ZIP and `SHA256SUMS.txt`. Does not publish to GitHub. |
-| `Start-Manager.cmd` | Opens `artifacts/desktop-0.6.1/AssettoServerManager.exe`. It launches an existing build; it does not compile source or start a game server. |
+| `Start-Manager.cmd` | Opens `artifacts/desktop-0.7.0/AssettoServerManager.exe`. It launches an existing build; it does not compile source or start a game server. |
 | `.gitignore` | Excludes local SDKs, builds, caches, settings, server configurations, backups and game data from new Git additions. |
 | `.github/workflows/build.yml` | GitHub Actions build on push, pull request or manual invocation. Runs portable packaging on Windows; currently does not upload artifacts or create releases. |
 | `.github/releases/v0.3.0-preview.md` | Historical release notes for the first public release. Its 0.3 version and feature list are intentional. |
@@ -38,7 +38,8 @@ The manager executable retains the name `AssettoServerManager.exe` even though t
 | `.github/releases/v0.5.0-preview.md` and `v0.5.1-preview.md` | Historical notes for intermediate local previews. |
 | `.github/releases/v0.5.2-preview.md` | Historical notes for the previous public release. |
 | `.github/releases/v0.6.0-preview.md` | Historical notes for the reliability preview. |
-| `.github/releases/v0.6.1-preview.md` | Prepared release notes for the new preview. Copy them into the release description when publishing. Keeping this file in Git does not publish a release. |
+| `.github/releases/v0.6.1-preview.md` | Historical notes for the folder-switching fix. |
+| `.github/releases/v0.7.0-preview.md` | Prepared release notes for the new preview. Copy them into the release description when publishing. Keeping this file in Git does not publish a release. |
 
 ### `src/ServerManager.App/`: Windows interface
 
@@ -46,11 +47,14 @@ This is the WPF application. **XAML** describes visible controls, layouts and st
 
 | File | Responsibility |
 | --- | --- |
-| `ServerManager.App.csproj` | App project settings: Windows target, WPF, .NET 10, executable name, versions and reference to Core. Current `Version` is `0.6.1`; `InformationalVersion` is `0.6.1-preview`. |
+| `ServerManager.App.csproj` | App project settings: Windows target, WPF, .NET 10, executable name, versions and reference to Core. Current `Version` is `0.7.0`; `InformationalVersion` is `0.7.0-preview`. |
 | `App.xaml` | Application-wide resources: palette, fonts, buttons, drop-downs, tooltips, scrollbars and table styles. |
 | `App.xaml.cs` | Startup in `OnStartup`, UI exception handling and dispatch of optional QA command-line modes. Creates the main window in normal operation. |
 | `MainWindow.xaml` | Main window layout: header, server sidebar, Overview, Cars and slots, Catalog, Validation, Log and action buttons. Contains the visible version badge. |
 | `MainWindow.xaml.cs` | Main editor behavior: profiles and drafts, settings, catalog selection, language changes, slot editing, saving, launching/stopping servers and opening CM. Also contains smoke/window checks and UI helper types. |
+| `MainWindow.Diagnostics.cs` | Captures draft diagnostics, filters findings/actions, runs cancellable checks and coordinates stopped-server restore with editor reload. |
+| `BackupsWindow.xaml` / `BackupsWindow.xaml.cs` | Backup history, optional content scope, per-file comparison, redacted previews, confirmation and restore progress. |
+| `MainWindow.RecoveryQA.cs` | Game-free WPF diagnostics/restore tests with screenshots and disposable fixtures. |
 | `MainWindow.ServerActions.cs` | Slot double-click handling and stopped-server folder actions: context menus, rename with draft preservation, process checks and Windows Recycle Bin deletion. |
 | `ManagerSettings.cs` | Shared per-user settings and migration of older per-build settings, including recovery of the Content Manager path. |
 | `MainWindow.DetailsQA.cs` | Optional UI checks for first launch, actual search caret geometry, car dialog behavior, saving and failure recovery, context-menu targets and process guards. Writes disposable fixtures under its output folder. |
@@ -92,6 +96,8 @@ Core has no WPF interface. The app and console tests both use it. It contains no
 | `Reliability.cs` | Atomic JSON preference storage, bounded thread-safe logs, known-secret redaction and rotated error journals. |
 | `ServerPorts.cs` | Probes actual IPv4 TCP/UDP port availability before launch, avoiding stale listener tables. |
 | `ServerReadiness.cs` | Bounded `/INFO` JSON validation for the expected track and layout. |
+| `ServerDiagnostics.cs` | Typed local findings and actions; required/numeric/slot/content/port checks, configuration baselines and read-only checksum comparison. |
+| `ServerBackups.cs` | Legacy/new backup discovery, manifests, scoped paths, hashes, previews, operation locking, safety capture, staged restore and rollback. Running-process guards live in the app. |
 | `UiText.cs` | Loads embedded translations, selects the language and formats translated messages. |
 
 The separate `tests/ServerManager.ProcessFixture/` console project simulates HTTP readiness, failed startup, noisy output and Ctrl+C handling. It uses the executable name `AssettoServer.exe` only inside test outputs and is never included in the application package. It is not an Assetto Corsa server.
@@ -102,6 +108,8 @@ The separate `tests/ServerManager.ProcessFixture/` console project simulates HTT
 | --- | --- |
 | `ServerManager.Core.Tests.csproj` | Console test project targeting .NET 10 and referencing Core. It uses a small assertion runner, not a separate test framework. |
 | `Program.cs` | Test entry point and assertions for configuration preservation, saving, backups, slot ordering, catalog parsing and translations; invokes creation tests. |
+| `BackupTests.cs` | Backup compatibility, exact recovery, safety undo, optional content, absent-file recovery, stale/tamper/path guards and rollback. |
+| `DiagnosticsTests.cs` | Actionable findings, severity/overrides, external changes, port conflicts, cancellation, redaction and read-only checks. |
 | `ReliabilityTests.cs` | Settings write/recovery/conflict tests, concurrent writes, log bounds/redaction/rotation and readiness validation. |
 | `CreationTests.cs` | Tests fresh server creation, installation sources, generated settings/content, cancellation, cleanup, private-data separation and ZIP/destination validation. |
 | `SaveAndFolderTests.cs` | No-op/content-only saves, backups and timestamps, stale baselines, real temporary-folder renames/collisions/case-only changes and CM discovery. |
@@ -153,12 +161,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tes
 .\Start-Manager.cmd
 
 # Create a portable package in a new output folder.
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Publish-Desktop.ps1 -OutputRoot .\artifacts\manual-release-0.6.1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Publish-Desktop.ps1 -OutputRoot .\artifacts\manual-release-0.7.0
 ```
 
-The default regular build folder is `artifacts/desktop-0.6.1/`; `-OutputDirectory` overrides it. `Start-Manager.cmd` still points to the default folder. Close the manager before rebuilding into a folder whose executable/DLLs it is using, or build into another folder.
+The default regular build folder is `artifacts/desktop-0.7.0/`; `-OutputDirectory` overrides it. `Start-Manager.cmd` still points to the default folder. Close the manager before rebuilding into a folder whose executable/DLLs it is using, or build into another folder.
 
-The packaging example produces `ACServerManager-0.6.1-preview-win-x64.zip` and `SHA256SUMS.txt`. If that output already exists, choose another `-OutputRoot`. The script intentionally preserves old packages. It includes the five Markdown guides, MIT license and runtime notices, and refuses to include personal `settings.json`.
+The packaging example produces `ACServerManager-0.7.0-preview-win-x64.zip` and `SHA256SUMS.txt`. If that output already exists, choose another `-OutputRoot`. The script intentionally preserves old packages. It includes the five Markdown guides, MIT license and runtime notices, and refuses to include personal `settings.json`.
 
 Optional smoke, window and wizard QA modes are described in [README.md](README.md). They depend on local game content; wizard QA creates and briefly starts its own test server. Ordinary builds and core tests do not start a server.
 
@@ -168,6 +176,7 @@ Optional smoke, window and wizard QA modes are described in [README.md](README.m
 - **Main editor behavior:** `MainWindow.xaml.cs`; process discovery/status lives in `ServerRuntime.cs`.
 - **Wizard interface/navigation:** `CreateServerWindow.xaml` and `.xaml.cs`; installation/config generation lives in `ServerCreation.cs`.
 - **Catalog/content handling:** `Catalog.cs`; configuration parsing/saving lives in `Configuration.cs`.
+- **Diagnostics/recovery:** `ServerDiagnostics.cs` and `MainWindow.Diagnostics.cs`; backups use `ServerBackups.cs` and `BackupsWindow.xaml` / `.xaml.cs`.
 - **Translation:** `Translations.json`, then the localization helpers for new binding behavior.
 
 After an edit, rebuild. Editing source does not change an EXE already compiled or running.
@@ -188,22 +197,22 @@ For this existing checkout, the remote is `origin` pointing to `https://github.c
    git diff --stat
    ```
 
-   Modified files show `M`; new files show `??`. Untracked wizard files must be added too. `git diff` alone does not show their contents.
+   Modified files show `M`; new files show `??`. New diagnostics, recovery and QA files must be added too. `git diff` alone does not show their contents.
 
 2. Stage the source and project documents, then review the staged change:
 
    ```powershell
-   git add .github .gitignore ACServerManager.slnx Build-Desktop.ps1 Publish-Desktop.ps1 Start-Manager.cmd README.md DESKTOP.md WIZARD.md PROJECT.md LICENSE src tests
+   git add .github .gitignore ACServerManager.slnx Build-Desktop.ps1 Publish-Desktop.ps1 Start-Manager.cmd README.md DESKTOP.md WIZARD.md PROJECT.md RELIABILITY.md Test-Reliability.ps1 LICENSE src tests
    git diff --cached --stat
    git diff --cached
    ```
 
-   This prepares the next commit. `.gitignore` excludes build outputs and local configuration. Confirm that the staged list contains the new wizard files and does not contain game/server data or personal settings.
+   This prepares the next commit. `.gitignore` excludes build outputs and local configuration. Confirm that the staged list contains the new diagnostics/recovery files and does not contain game/server data or personal settings.
 
 3. Save a local commit, then upload it:
 
    ```powershell
-   git commit -m "Add car details and server removal (0.6.1)"
+   git commit -m "Add diagnostics and backup recovery (0.7.0)"
    git push origin master
    ```
 
@@ -216,9 +225,9 @@ For this existing checkout, the remote is `origin` pointing to `https://github.c
 After pushing the source and verifying the intended commit:
 
 1. Open the repository's [Releases](https://github.com/drkreis/ac-server-manager/releases) page and choose **Draft a new release**.
-2. Create the tag **`v0.6.1-preview`**, targeting the pushed `master` revision. If this tag already exists, inspect it before reusing it; do not move an existing published version silently.
-3. Use the title **AC Server Manager 0.6.1 Preview** and copy `.github/releases/v0.6.1-preview.md` into the description.
-4. Attach the matching **`ACServerManager-0.6.1-preview-win-x64.zip`**. The packaging script also generates `SHA256SUMS.txt` for local verification; a separate checksum attachment is not required for this release.
+2. Create the tag **`v0.7.0-preview`**, targeting the pushed `master` revision. If this tag already exists, inspect it before reusing it; do not move an existing published version silently.
+3. Use the title **AC Server Manager 0.7.0 Preview** and copy `.github/releases/v0.7.0-preview.md` into the description.
+4. Attach the matching **`ACServerManager-0.7.0-preview-win-x64.zip`**. The packaging script also generates `SHA256SUMS.txt` for local verification; a separate checksum attachment is not required for this release.
 5. Select **This is a pre-release**, review the attachments, then choose **Publish release**, or **Save draft** to leave it unpublished.
 
 These are separate operations: pushing source, building a package, and publishing a Release. The automatically generated **Source code** ZIP on GitHub does not replace the portable application attachment. See [GitHub's release guide](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository).

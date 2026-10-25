@@ -1,4 +1,4 @@
-# AC Server Manager 0.6.1 Preview
+# AC Server Manager 0.7.0 Preview
 
 A Windows application built with C#, WPF and .NET 10. PowerShell is only used for building and packaging.
 
@@ -14,9 +14,9 @@ Maximizing uses the native window frame with custom styling through WindowChrome
 
 ## Getting started
 
-This guide covers version **0.6.1-preview**. Available Windows x64 packages are listed in [Releases](https://github.com/drkreis/ac-server-manager/releases); a source checkout may be newer than a published package. Extract the entire portable archive into a writable folder and run `AssettoServerManager.exe`; .NET is included. Keep the DLLs and other files alongside the EXE.
+This guide covers version **0.7.0-preview**. Available Windows x64 packages are listed in [Releases](https://github.com/drkreis/ac-server-manager/releases); a source checkout may be newer than a published package. Extract the entire portable archive into a writable folder and run `AssettoServerManager.exe`; .NET is included. Keep the DLLs and other files alongside the EXE.
 
-For a local build from source, double-click `Start-Manager.cmd` or `artifacts/desktop-0.6.1/AssettoServerManager.exe`. This regular build requires the .NET 10 Desktop Runtime x64.
+For a local build from source, double-click `Start-Manager.cmd` or `artifacts/desktop-0.7.0/AssettoServerManager.exe`. This regular build requires the .NET 10 Desktop Runtime x64.
 
 Building requires the .NET 10 SDK. The script uses the local SDK in `.tools/dotnet` if available, otherwise `dotnet` from PATH. Visual Studio is not required; the SDK and cache are excluded from Git. See [README.md](README.md) for build and portable packaging commands.
 
@@ -69,7 +69,7 @@ Before a real write, the manager copies the three configuration files to `<serve
 
 When slots are removed, `CARS` is rebuilt from the remaining cars and the sections are renumbered. Saving is blocked if the configurations have changed since they were loaded. All files are prepared before replacement; if an error occurs, files already written are restored. Recovery from a power failure during the operation is not covered.
 
-A successful save is reported in the status bar without a confirmation dialog. Validation notices are available in the Validation tab and do not prevent saving; invalid configuration or a failed write still produces an error. After a successful write, the disk baseline is refreshed without recreating the server list, selection, editor or slot objects. A transparent input blocker prevents edits during a write without changing control colors. On failure, the unsaved draft remains available. Server switching and creation are blocked while saving. Saving does not restart the server. To restore a backup, stop the server and copy the backed-up configurations into `cfg`; restore content files as needed.
+A successful save is reported in the status bar without a confirmation dialog. Validation notices are available in the Validation tab and do not prevent saving; invalid configuration or a failed write still produces an error. After a successful write, the disk baseline is refreshed without recreating the server list, selection, editor or slot objects. A transparent input blocker prevents edits during a write without changing control colors. On failure, the unsaved draft remains available. Server switching and creation are blocked while saving. Saving does not restart the server. Use **Backups** to compare and restore a stopped server; see the recovery walkthrough below.
 
 ## Deferred features
 
@@ -79,9 +79,9 @@ Presets and server cloning; packing unpacked data into `data.acd`; updating exis
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tests
-.\artifacts\desktop-0.6.1\AssettoServerManager.exe --smoke .\artifacts\qa --servers-root 'D:\AC Servers'
-.\artifacts\desktop-0.6.1\AssettoServerManager.exe --window-qa .\artifacts\window-qa --servers-root 'D:\AC Servers'
-.\artifacts\desktop-0.6.1\AssettoServerManager.exe --ui-qa .\artifacts\details-qa
+.\artifacts\desktop-0.7.0\AssettoServerManager.exe --smoke .\artifacts\qa --servers-root 'D:\AC Servers'
+.\artifacts\desktop-0.7.0\AssettoServerManager.exe --window-qa .\artifacts\window-qa --servers-root 'D:\AC Servers'
+.\artifacts\desktop-0.7.0\AssettoServerManager.exe --ui-qa .\artifacts\details-qa
 ```
 
 Core tests use temporary servers and check messages in both languages, slot reordering with field preservation, and mod metadata parsing. The smoke test reads real profiles and the catalog, exercises UI actions in memory, checks RU / EN switching while preserving drafts, and verifies language settings compatibility. It renders PNG screenshots in both languages. `--window-qa` additionally shows a test window, checks actual maximize/restore behavior, content bounds and modal dialog button results. These checks do not write live configurations or start servers. The build uses the local SDK or an SDK from PATH.
@@ -98,10 +98,34 @@ The server log is bounded and refreshed at most five times per second rather tha
 
 Manager errors are retained in `%LOCALAPPDATA%\ACServerManager\logs\manager-errors.log` and one rotated `.previous` file. QA modes keep their logs under their own output folder. See [RELIABILITY.md](RELIABILITY.md) for isolated process checks and remaining limits.
 
-## Changing folders in 0.6.1
+## Changing folders in 0.7.0
 
 Choosing a new servers folder refreshes its list immediately without reloading game content. When typing or pasting either folder path, press **Enter** or leave the field to apply it; **Escape** restores the applied path. A nonexistent or inaccessible path is rejected and the previous path/profile is retained. Equivalent paths differing only in case or a trailing separator do not reload the draft.
 
 A server-folder change asks before discarding unsaved server edits. Cancel restores the previous folder path and preserves the draft. An empty or unset server folder clears the selected profile, fields, slots, track preview, diagnostics and log. The editor is replaced by a create/select prompt; Create server, Browse and Save report remain available. Already running managed servers continue running and remain tracked, including when they are outside the currently displayed root.
 
 Changing the game folder reloads its catalog. Clearing it removes the previous catalog and previews. Saved preferences use applied paths, not an unfinished edit in a path field. These changes react to folder selection or path confirmation; they do not watch external filesystem changes continuously.
+
+
+## Diagnostics in 0.7
+
+Open **Validation** and run **Check configs and content**. The manager checks the current draft without saving it. Findings are split into errors, warnings and information; each explains the issue and suggests an action such as focusing a field, opening a catalog entry or opening a local folder. You can filter findings and copy an individual explanation. Editing settings marks existing results as potentially out of date. Cancel stops a check without modifying files.
+
+Checks cover required values, numeric ranges, slot limits and roles, runtime presence, port availability, local content, skins, AI spline presence and common checksum differences. A running server's own ports are not flagged as conflicts. Explicit alternative/missing-car-checksum settings are respected. Missing track data or a game/server version difference is a warning rather than a claim that every CSP configuration will fail. Existing content is never replaced by diagnostics. **Save** can prepare supported missing files using the existing save behavior.
+
+**Start** checks the saved configuration and refuses to launch while blocking errors remain. Unsaved settings still need to be saved first. External changes to a loaded configuration require **Reload settings**. Warnings need review but do not automatically block startup. The checks are local and cannot establish internet reachability, full mod compatibility, correct AI behavior or successful game loading.
+
+The report export includes the latest selected-server findings, their timestamp and whether editor changes have made them stale. Known secret fields are redacted; review any report before sharing.
+
+## Backup history and restore
+
+1. Stop the server and click **Backups**. The manager checks for running AssettoServer processes before opening history and again before restoring; unknown process status blocks the operation.
+2. Select a dated backup. The file list shows whether each file would be replaced, created, removed or left unchanged, with sizes in bytes. Select a file to compare the current and backed-up text side by side; binary previews show size and SHA-256. Known passwords/tokens are hidden only in the preview, not removed from restored files.
+3. By default, only `cfg/server_cfg.ini`, `cfg/entry_list.ini` and `cfg/extra_cfg.yml` are included. Enable **Also restore backed-up content files** only if those listed car/track files should also be restored. Files which did not exist in a new-format backup are explicitly shown as removals; unrelated content, plugins and executables are untouched.
+4. Review the exact action list and confirm. Cancel preserves the editor draft and files. A successful restore replaces the editor with the recovered configuration, discards its old unsaved draft and leaves the server stopped.
+
+Before any changed file is committed, the current three configurations and affected content files are captured under the same server's `backups/` folder as **Before restore**. Select that copy to reverse a restore; include content again if needed. If a configuration was already missing or invalid before recovery, its safety copy is retained for manual inspection but may not be eligible for automatic restoration.
+
+New save backups include `manager-backup.json` with file hashes and recorded absences. Older complete backups remain readable, including the historical content directory layout, but cannot identify files that were originally absent. Incomplete, unsupported or damaged copies cannot be restored. Preview does not change files. Restore rejects a comparison if current files or the chosen backup have changed since preview. Refresh history to compare again.
+
+Restoration supports local server folders, rejects symbolic links/junctions and game-folder targets, stages replacements and attempts rollback on ordinary write failures. Multi-file restore is not power-loss atomic. Backup retention, deletion and scheduled backups are not included; keep important copies outside the working server folder as well.

@@ -12,10 +12,18 @@ namespace ServerManager.App;
 
 public partial class MainWindow
 {
-    private void BlockBusyKeyboard(object sender, KeyEventArgs e) { if (saving || folderOperation || stoppingForClose) e.Handled = true; }
+    private void BlockBusyKeyboard(object sender, KeyEventArgs e)
+    {
+        if (checkingDiagnostics)
+        {
+            if (e.Key == Key.Escape) { diagnosticsCancellation?.Cancel(); e.Handled = true; }
+            else if (e.OriginalSource != CancelDiagnosticButton) e.Handled = true;
+        }
+        else if (saving || folderOperation || stoppingForClose) e.Handled = true;
+    }
     private void ServerMenuOpening(object sender, ContextMenuEventArgs e)
     {
-        if (saving || folderOperation || e.OriginalSource is not DependencyObject source || ItemsControl.ContainerFromElement(ServerList, source) is not ListBoxItem item)
+        if (saving || folderOperation || checkingDiagnostics || e.OriginalSource is not DependencyObject source || ItemsControl.ContainerFromElement(ServerList, source) is not ListBoxItem item)
         { e.Handled = true; return; }
         PrepareServerMenu(item);
     }

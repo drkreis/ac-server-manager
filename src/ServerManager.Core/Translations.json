@@ -1079,5 +1079,693 @@
   "ChooseServersFolder": {"En":"Choose servers folder","Ru":"Выбрать папку серверов"},
   "FolderUnavailable": {"En":"Folder not found or unavailable: {0}","Ru":"Папка не найдена или недоступна: {0}"},
   "EmptyFolderStatus": {"En":"No servers found in the selected folder.","Ru":"В выбранной папке серверы не найдены."},
-  "RefreshingServers": {"En":"Refreshing server list…","Ru":"Обновляю список серверов…"}
+  "RefreshingServers": {"En":"Refreshing server list…","Ru":"Обновляю список серверов…"},
+  "Recovery0": {
+    "Ru": "Некорректный путь в резервной копии.",
+    "En": "Invalid path in backup."
+  },
+  "Recovery1": {
+    "Ru": "Восстановление через ссылки и junction-папки не поддерживается.",
+    "En": "Restore through symbolic links and junctions is not supported."
+  },
+  "Recovery2": {
+    "Ru": "Выберите папку сервера с каталогом cfg.",
+    "En": "Select a server folder containing cfg."
+  },
+  "Recovery3": {
+    "Ru": "Восстановление доступно только для локальных серверов.",
+    "En": "Restore is available for local servers only."
+  },
+  "Recovery4": {
+    "Ru": "Нельзя восстанавливать бэкап в папку игры.",
+    "En": "Backups cannot be restored into the game folder."
+  },
+  "Recovery5": {
+    "Ru": "С сервером уже выполняется другая операция. Повторите позже.",
+    "En": "Another operation is using this server. Try again later."
+  },
+  "Recovery6": {
+    "Ru": "Резервная копия содержит неподдерживаемый файл: {0}",
+    "En": "The backup contains an unsupported file: {0}"
+  },
+  "Recovery7": {
+    "Ru": "Выберите резервную копию этого сервера.",
+    "En": "Select a backup belonging to this server."
+  },
+  "Recovery8": {
+    "Ru": "Повреждён манифест резервной копии.",
+    "En": "The backup manifest is damaged."
+  },
+  "Recovery9": {
+    "Ru": "Формат резервной копии не поддерживается.",
+    "En": "This backup format is not supported."
+  },
+  "Recovery10": {
+    "Ru": "В резервной копии слишком много файлов.",
+    "En": "The backup contains too many files."
+  },
+  "Recovery11": {
+    "Ru": "Резервная копия неполная: нужны все три конфига.",
+    "En": "Incomplete backup: all three configuration files are required."
+  },
+  "Recovery12": {
+    "Ru": "Файлы резервной копии отсутствуют или повреждены.",
+    "En": "Backup files are missing or damaged."
+  },
+  "Recovery13": {
+    "Ru": "Слишком большой конфиг в резервной копии.",
+    "En": "A configuration file in this backup is too large."
+  },
+  "Recovery14": {
+    "Ru": "В резервной копии нет секции SERVER.",
+    "En": "The backup has no SERVER section."
+  },
+  "Recovery15": {
+    "Ru": "В резервной копии некорректный список слотов.",
+    "En": "The backup contains an invalid slot list."
+  },
+  "Recovery16": {
+    "Ru": "Контрольная сумма бэкапа не совпадает: {0}",
+    "En": "Backup checksum mismatch: {0}"
+  },
+  "Recovery17": {
+    "Ru": "Файл отсутствовал в этой копии.",
+    "En": "This file did not exist in this backup."
+  },
+  "Recovery18": {
+    "Ru": "Файл отсутствует.",
+    "En": "File is missing."
+  },
+  "Recovery19": {
+    "Ru": "Двоичный файл · {0} байт\nSHA-256: {1}",
+    "En": "Binary file · {0} bytes\nSHA-256: {1}"
+  },
+  "Recovery20": {
+    "Ru": "Файлы изменились после просмотра. Обновите сравнение перед восстановлением.",
+    "En": "Files have changed since preview. Refresh the comparison before restoring."
+  },
+  "Recovery21": {
+    "Ru": "Файл бэкапа изменился во время подготовки.",
+    "En": "A backup file changed during preparation."
+  },
+  "Recovery22": {
+    "Ru": "Файл изменился во время отката: {0}",
+    "En": "A file changed during rollback: {0}"
+  },
+  "Recovery23": {
+    "Ru": "Восстановление прервано. Проверьте файлы и страховочный бэкап: {0}",
+    "En": "Restore was interrupted. Check the files and safety backup: {0}"
+  },
+  "Recovery24": {
+    "Ru": "Предупреждение",
+    "En": "Warning"
+  },
+  "Recovery25": {
+    "Ru": "Информация",
+    "En": "Information"
+  },
+  "Recovery26": {
+    "Ru": "Открыть настройку",
+    "En": "Open setting"
+  },
+  "Recovery27": {
+    "Ru": "Конфиг изменён вне менеджера: {0}",
+    "En": "Configuration changed outside the manager: {0}"
+  },
+  "Recovery28": {
+    "Ru": "Открытый редактор содержит другую версию файла.",
+    "En": "The editor contains a different version of this file."
+  },
+  "Recovery29": {
+    "Ru": "Перечитайте настройки перед сохранением или запуском. Несохранённые изменения потребуют подтверждения.",
+    "En": "Reload settings before saving or starting. Discarding unsaved changes requires confirmation."
+  },
+  "Recovery30": {
+    "Ru": "Перечитать настройки",
+    "En": "Reload settings"
+  },
+  "Recovery31": {
+    "Ru": "Не заполнено поле {0}",
+    "En": "Required field is empty: {0}"
+  },
+  "Recovery32": {
+    "Ru": "Без этого значения нельзя подготовить конфигурацию сервера.",
+    "En": "This value is needed to prepare the server configuration."
+  },
+  "Recovery33": {
+    "Ru": "Заполните поле и повторите проверку.",
+    "En": "Fill in the field and check again."
+  },
+  "Recovery34": {
+    "Ru": "Недопустимый перенос строки: {0}",
+    "En": "Unexpected line break: {0}"
+  },
+  "Recovery35": {
+    "Ru": "Значение должно занимать одну строку.",
+    "En": "The value must fit on one line."
+  },
+  "Recovery36": {
+    "Ru": "Удалите перенос строки.",
+    "En": "Remove the line break."
+  },
+  "Recovery37": {
+    "Ru": "Некорректный ID трассы или варианта",
+    "En": "Invalid track or layout ID"
+  },
+  "Recovery38": {
+    "Ru": "ID не должен содержать слеши или переходы между папками.",
+    "En": "IDs must not contain slashes or directory traversal."
+  },
+  "Recovery39": {
+    "Ru": "Выберите трассу и вариант в каталоге.",
+    "En": "Choose a track and layout in the catalog."
+  },
+  "Recovery40": {
+    "Ru": "Открыть каталог трасс",
+    "En": "Open track catalog"
+  },
+  "Recovery41": {
+    "Ru": "Некорректное значение {0}",
+    "En": "Invalid value: {0}"
+  },
+  "Recovery42": {
+    "Ru": "Допустимый диапазон: {1}–{2}.",
+    "En": "Allowed range: {1}–{2}."
+  },
+  "Recovery43": {
+    "Ru": "Введите число в указанном диапазоне.",
+    "En": "Enter a number within this range."
+  },
+  "Recovery44": {
+    "Ru": "TCP и HTTP используют один порт",
+    "En": "TCP and HTTP use the same port"
+  },
+  "Recovery45": {
+    "Ru": "Измените один из портов.",
+    "En": "Change one of these ports."
+  },
+  "Recovery46": {
+    "Ru": "Некорректное число слотов",
+    "En": "Invalid slot count"
+  },
+  "Recovery47": {
+    "Ru": "Добавьте или удалите машины.",
+    "En": "Add or remove cars."
+  },
+  "Recovery48": {
+    "Ru": "Лимит меньше количества машин",
+    "En": "Slot limit is smaller than the car count"
+  },
+  "Recovery49": {
+    "Ru": "Слотов: {0}. Установленный лимит: {1}.",
+    "En": "Slots: {0}. Configured limit: {1}."
+  },
+  "Recovery50": {
+    "Ru": "Нажмите «По числу машин» в обзоре или увеличьте лимит.",
+    "En": "Use Match slot count in Overview or increase the limit."
+  },
+  "Recovery51": {
+    "Ru": "Некорректная модель в CAR_{0}",
+    "En": "Invalid model in CAR_{0}"
+  },
+  "Recovery52": {
+    "Ru": "ID машины содержит недопустимые символы.",
+    "En": "The car ID contains unsupported characters."
+  },
+  "Recovery53": {
+    "Ru": "Замените машину через каталог.",
+    "En": "Replace this car through the catalog."
+  },
+  "Recovery54": {
+    "Ru": "Неизвестное назначение CAR_{0}",
+    "En": "Unknown role in CAR_{0}"
+  },
+  "Recovery55": {
+    "Ru": "Назначение слота не поддерживается менеджером.",
+    "En": "The manager does not support this slot role."
+  },
+  "Recovery56": {
+    "Ru": "Выберите игрока, трафик или смешанный слот.",
+    "En": "Choose Player, Traffic or Player / AI."
+  },
+  "Recovery57": {
+    "Ru": "Не найден AssettoServer.exe",
+    "En": "AssettoServer.exe is missing"
+  },
+  "Recovery58": {
+    "Ru": "В папке выбранного сервера нет программы запуска.",
+    "En": "The selected server folder has no server executable."
+  },
+  "Recovery59": {
+    "Ru": "Установите AssettoServer или создайте сервер мастером.",
+    "En": "Install AssettoServer or create a server with the wizard."
+  },
+  "Recovery60": {
+    "Ru": "Открыть папку сервера",
+    "En": "Open server folder"
+  },
+  "Recovery61": {
+    "Ru": "Порт недоступен: {0}",
+    "En": "Port unavailable: {0}"
+  },
+  "Recovery62": {
+    "Ru": "Порт занят другим приложением или недоступен для привязки.",
+    "En": "Another application is using this port, or binding is unavailable."
+  },
+  "Recovery63": {
+    "Ru": "Остановите использующее его приложение или выберите другой порт.",
+    "En": "Stop the application using it or choose another port."
+  },
+  "Recovery64": {
+    "Ru": "Сервер уже работает",
+    "En": "The server is already running"
+  },
+  "Recovery65": {
+    "Ru": "Занятость портов работающего сервера не считается конфликтом.",
+    "En": "Ports used by the running server are not treated as conflicts."
+  },
+  "Recovery66": {
+    "Ru": "Остановите сервер для отдельной проверки доступности портов.",
+    "En": "Stop the server to check port availability separately."
+  },
+  "Recovery67": {
+    "Ru": "Каталог игры не загружен",
+    "En": "Game catalog is not loaded"
+  },
+  "Recovery68": {
+    "Ru": "Локальные машины, скины и совпадение версий не проверены.",
+    "En": "Local cars, skins and matching versions have not been checked."
+  },
+  "Recovery69": {
+    "Ru": "Укажите папку Assetto Corsa для полной проверки.",
+    "En": "Select the Assetto Corsa folder for a full check."
+  },
+  "Recovery70": {
+    "Ru": "Данные трассы не найдены",
+    "En": "Track data was not found"
+  },
+  "Recovery71": {
+    "Ru": "Проверьте ID, вариант и наличие контента. Специальные настройки CSP требуют отдельной проверки.",
+    "En": "Check the IDs, layout and installed content. Special CSP settings need separate review."
+  },
+  "Recovery72": {
+    "Ru": "Слотов больше, чем пит-боксов",
+    "En": "More slots than pit boxes"
+  },
+  "Recovery73": {
+    "Ru": "У трассы {0} пит-боксов; слотов {1}.",
+    "En": "This track has {0} pit boxes; there are {1} slots."
+  },
+  "Recovery74": {
+    "Ru": "Проверьте допустимое число машин или уменьшите число слотов.",
+    "En": "Check the supported car count or reduce the slot count."
+  },
+  "Recovery75": {
+    "Ru": "Папка машины на сервере",
+    "En": "Car folder on server"
+  },
+  "Recovery76": {
+    "Ru": "Машина в каталоге",
+    "En": "Car in catalog"
+  },
+  "Recovery77": {
+    "Ru": "Машина отсутствует в игре: {0}",
+    "En": "Car is missing from the game: {0}"
+  },
+  "Recovery78": {
+    "Ru": "Для локального подключения нужна установленная версия этой машины.",
+    "En": "This car must be installed to join locally."
+  },
+  "Recovery79": {
+    "Ru": "Установите мод в игру и обновите каталог.",
+    "En": "Install the mod in the game and refresh the catalog."
+  },
+  "Recovery80": {
+    "Ru": "Открыть папку машин",
+    "En": "Open cars folder"
+  },
+  "Recovery81": {
+    "Ru": "Нет data.acd на сервере: {0}",
+    "En": "Server data.acd is missing: {0}"
+  },
+  "Recovery82": {
+    "Ru": "Архив найден в игре и может быть подготовлен при сохранении.",
+    "En": "The archive exists in the game and can be prepared when saving."
+  },
+  "Recovery83": {
+    "Ru": "Для обычного запуска нужен архив data.acd. Распакованная папка data не заменяет серверный архив.",
+    "En": "A normal server start needs data.acd. An unpacked data folder does not replace the server archive."
+  },
+  "Recovery84": {
+    "Ru": "Сохраните настройки для копирования недостающего файла.",
+    "En": "Save settings to copy the missing file."
+  },
+  "Recovery85": {
+    "Ru": "Установите нужную версию машины или упакуйте данные в Content Manager. Специальные исключения сервера проверяются отдельно.",
+    "En": "Install the correct car version or pack its data in Content Manager. Special server exceptions need separate review."
+  },
+  "Recovery86": {
+    "Ru": "Подготовить через сохранение",
+    "En": "Prepare through Save"
+  },
+  "Recovery87": {
+    "Ru": "Используются альтернативные данные: {0}",
+    "En": "Alternative data is enabled: {0}"
+  },
+  "Recovery88": {
+    "Ru": "На сервере включены альтернативные контрольные суммы машины.",
+    "En": "The server allows alternative car checksums."
+  },
+  "Recovery89": {
+    "Ru": "Убедитесь, что нужная версия клиента входит в разрешённые варианты.",
+    "En": "Make sure the client version is among the allowed variants."
+  },
+  "Recovery90": {
+    "Ru": "Скин CAR_{0} не найден",
+    "En": "Skin for CAR_{0} was not found"
+  },
+  "Recovery91": {
+    "Ru": "Скин {1} отсутствует у машины {2}.",
+    "En": "Skin {1} is missing from car {2}."
+  },
+  "Recovery92": {
+    "Ru": "Выберите установленный скин или обновите мод.",
+    "En": "Choose an installed skin or update the mod."
+  },
+  "Recovery93": {
+    "Ru": "Данные машины распакованы: {0}",
+    "En": "Car data is unpacked: {0}"
+  },
+  "Recovery94": {
+    "Ru": "В игре есть data без data.acd. Сервер проверяет архив, а не распакованную папку.",
+    "En": "The game has data without data.acd. The server checks the archive rather than the unpacked folder."
+  },
+  "Recovery95": {
+    "Ru": "Упакуйте данные в Content Manager и проверьте версии перед заменой файлов сервера.",
+    "En": "Pack the data in Content Manager and check versions before replacing server files."
+  },
+  "Recovery96": {
+    "Ru": "Папка машины в игре",
+    "En": "Car folder in game"
+  },
+  "Recovery97": {
+    "Ru": "Разные данные машины: {0}",
+    "En": "Car data differs: {0}"
+  },
+  "Recovery98": {
+    "Ru": "data.acd в игре и на сервере различаются; подключение может завершиться ошибкой проверки файлов.",
+    "En": "Game and server data.acd files differ; joining may fail the checksum check."
+  },
+  "Recovery99": {
+    "Ru": "Сравните версии мода. Перед ручной синхронизацией остановите сервер и сохраните бэкап.",
+    "En": "Compare mod versions. Stop the server and keep a backup before synchronizing files manually."
+  },
+  "Recovery100": {
+    "Ru": "Разные файлы трассы: {0}",
+    "En": "Track file differs: {0}"
+  },
+  "Recovery101": {
+    "Ru": "Версии файла в игре и на сервере различаются.",
+    "En": "The game and server have different versions of this file."
+  },
+  "Recovery102": {
+    "Ru": "Проверьте версии трассы и настройки CSP. Менеджер не заменяет существующие файлы автоматически.",
+    "En": "Check track versions and CSP settings. The manager does not replace existing files automatically."
+  },
+  "Recovery103": {
+    "Ru": "Папка файла на сервере",
+    "En": "File folder on server"
+  },
+  "Recovery104": {
+    "Ru": "Папка файла в игре",
+    "En": "File folder in game"
+  },
+  "Recovery105": {
+    "Ru": "AI-сплайн не найден",
+    "En": "AI spline was not found"
+  },
+  "Recovery106": {
+    "Ru": "Трафик включён, но в проверенных папках нет файлов .ai или .aip.",
+    "En": "Traffic is enabled, but the checked folders contain no .ai or .aip files."
+  },
+  "Recovery107": {
+    "Ru": "Выберите вариант с подходящим сплайном или настройте путь к нему. Наличие файла не гарантирует корректную работу трафика.",
+    "En": "Choose a layout with a suitable spline or configure its path. Finding a file does not guarantee working traffic."
+  },
+  "Recovery108": {
+    "Ru": "Папка трассы на сервере",
+    "En": "Track folder on server"
+  },
+  "Recovery109": {
+    "Ru": "Нет слотов для игроков",
+    "En": "No player slots"
+  },
+  "Recovery110": {
+    "Ru": "Все машины назначены трафиком.",
+    "En": "All cars are assigned to traffic."
+  },
+  "Recovery111": {
+    "Ru": "Измените назначение хотя бы одного слота.",
+    "En": "Change the role of at least one slot."
+  },
+  "Recovery112": {
+    "Ru": "Замечания к описаниям контента",
+    "En": "Content metadata notes"
+  },
+  "Recovery113": {
+    "Ru": "Не удалось полностью прочитать описания: {0}. Это не проверка физики модов.",
+    "En": "Descriptions could not be fully read: {0}. This is not a mod physics check."
+  },
+  "Recovery114": {
+    "Ru": "При необходимости откройте каталог и проверьте проблемные описания.",
+    "En": "Open the catalog and review the affected descriptions if needed."
+  },
+  "Recovery115": {
+    "Ru": "Открыть каталог машин",
+    "En": "Open car catalog"
+  },
+  "Recovery116": {
+    "Ru": "Неполная или повреждённая копия",
+    "En": "Incomplete or damaged backup"
+  },
+  "Recovery117": {
+    "Ru": "Перед восстановлением",
+    "En": "Before restore"
+  },
+  "Recovery118": {
+    "Ru": "Перед сохранением",
+    "En": "Before save"
+  },
+  "Recovery119": {
+    "Ru": "Старая резервная копия",
+    "En": "Legacy backup"
+  },
+  "Recovery120": {
+    "Ru": "Заменить",
+    "En": "Replace"
+  },
+  "Recovery121": {
+    "Ru": "Восстановить отсутствующий",
+    "En": "Restore missing file"
+  },
+  "Recovery122": {
+    "Ru": "Удалить созданный позже",
+    "En": "Remove file created later"
+  },
+  "Recovery123": {
+    "Ru": "Без изменений",
+    "En": "Unchanged"
+  },
+  "Recovery125": {
+    "Ru": "Читаю резервные копии…",
+    "En": "Reading backups…"
+  },
+  "Recovery126": {
+    "Ru": "Резервных копий пока нет",
+    "En": "No backups yet"
+  },
+  "Recovery127": {
+    "Ru": "Копия создаётся перед сохранением реальных изменений.",
+    "En": "A backup is created before saving actual changes."
+  },
+  "Recovery128": {
+    "Ru": "Эта копия недоступна для восстановления",
+    "En": "This backup cannot be restored"
+  },
+  "Recovery129": {
+    "Ru": "Сравниваю файлы…",
+    "En": "Comparing files…"
+  },
+  "Recovery130": {
+    "Ru": "Изменится файлов: {0}",
+    "En": "Files to change: {0}"
+  },
+  "Recovery131": {
+    "Ru": "Включены только файлы контента, перечисленные в этой копии. Остальные файлы сохраняются.",
+    "En": "Only content files listed in this backup are included. Other files are kept."
+  },
+  "Recovery132": {
+    "Ru": "Восстанавливаются только три конфига. Контент остаётся на месте.",
+    "En": "Only the three configuration files will be restored. Content stays in place."
+  },
+  "Recovery133": {
+    "Ru": "Восстановить выбранную копию?\n\n{0}\n\nПеред изменением будет создан страховочный бэкап текущих файлов. Сервер не будет запущен автоматически.",
+    "En": "Restore the selected backup?\n\n{0}\n\nA safety backup of the current files will be created first. The server will not start automatically."
+  },
+  "Recovery134": {
+    "Ru": "\nНесохранённые изменения редактора будут отброшены после успешного восстановления.",
+    "En": "\nUnsaved editor changes will be discarded after a successful restore."
+  },
+  "Recovery135": {
+    "Ru": "Восстановление резервной копии",
+    "En": "Restore backup"
+  },
+  "Recovery137": {
+    "Ru": "Восстанавливаю файлы и сохраняю текущую версию…",
+    "En": "Restoring files and saving the current version…"
+  },
+  "Recovery138": {
+    "Ru": "Файлы уже совпадают с выбранной копией.",
+    "En": "Files already match the selected backup."
+  },
+  "Recovery139": {
+    "Ru": "Восстановлено файлов: {0}. Текущее состояние сохранено отдельной копией.",
+    "En": "Files restored: {0}. The previous state was saved as a separate backup."
+  },
+  "Recovery140": {
+    "Ru": "Проверка ещё не выполнена",
+    "En": "Not checked yet"
+  },
+  "Recovery141": {
+    "Ru": "Ошибок: {0} · предупреждений: {1} · проверено: {2}",
+    "En": "Errors: {0} · warnings: {1} · checked: {2}"
+  },
+  "Recovery142": {
+    "Ru": "Проверка отменена. Файлы не изменены.",
+    "En": "Check cancelled. Files were not changed."
+  },
+  "Recovery143": {
+    "Ru": "Подробности скопированы.",
+    "En": "Details copied."
+  },
+  "Recovery144": {
+    "Ru": "Некорректный путь папки.",
+    "En": "Invalid folder path."
+  },
+  "Recovery145": {
+    "Ru": "Выбранный сервер изменился. Откройте копии заново.",
+    "En": "The selected server has changed. Open backups again."
+  },
+  "Recovery146": {
+    "Ru": "Восстановлено файлов: {0}. Сервер не запущен.",
+    "En": "Files restored: {0}. The server has not been started."
+  },
+  "Recovery147": {
+    "Ru": "Проверка недоступна",
+    "En": "Check unavailable"
+  },
+  "Recovery148": {
+    "Ru": "Файлы сохранены, но проверку не удалось завершить.",
+    "En": "Files were saved, but the check could not be completed."
+  },
+  "Recovery149": {
+    "Ru": "Запустите проверку ещё раз.",
+    "En": "Run the check again."
+  },
+  "Recovery150": {
+    "Ru": "Исправьте ошибки перед запуском сервера.",
+    "En": "Fix errors before starting the server."
+  },
+  "BackupsTitle": {
+    "Ru": "Резервные копии",
+    "En": "Backups"
+  },
+  "BackupHistory": {
+    "Ru": "История копий",
+    "En": "Backup history"
+  },
+  "BackupChoose": {
+    "Ru": "Выберите резервную копию",
+    "En": "Choose a backup"
+  },
+  "BackupIncludeContent": {
+    "Ru": "Также восстановить сохранённые файлы контента",
+    "En": "Also restore backed-up content files"
+  },
+  "BackupFile": {
+    "Ru": "Файл",
+    "En": "File"
+  },
+  "BackupAction": {
+    "Ru": "Действие",
+    "En": "Action"
+  },
+  "BackupSizes": {
+    "Ru": "Байт: сейчас → копия",
+    "En": "Bytes: now → backup"
+  },
+  "BackupPreviewPrivacy": {
+    "Ru": "Известные пароли и токены скрыты в предпросмотре. Восстанавливаются оригинальные файлы. Перед копированием проверьте текст.",
+    "En": "Known passwords and tokens are hidden in this preview. Original files are restored. Review the text before copying."
+  },
+  "BackupCurrent": {
+    "Ru": "Сейчас на сервере",
+    "En": "Current server file"
+  },
+  "BackupSelectedVersion": {
+    "Ru": "В выбранной копии",
+    "En": "Selected backup file"
+  },
+  "BackupOpenFolder": {
+    "Ru": "Открыть папку копии",
+    "En": "Open backup folder"
+  },
+  "BackupRestore": {
+    "Ru": "Восстановить",
+    "En": "Restore"
+  },
+  "BackupWorking": {
+    "Ru": "Подготовка восстановления…",
+    "En": "Preparing restore…"
+  },
+  "DiagAll": {
+    "Ru": "Все замечания",
+    "En": "All findings"
+  },
+  "DiagErrors": {
+    "Ru": "Ошибки",
+    "En": "Errors"
+  },
+  "DiagWarnings": {
+    "Ru": "Предупреждения",
+    "En": "Warnings"
+  },
+  "DiagInformation": {
+    "Ru": "Справка",
+    "En": "Information"
+  },
+  "DiagStale": {
+    "Ru": "Настройки изменились. Результат проверки может быть неактуален.",
+    "En": "Settings have changed. These results may be out of date."
+  },
+  "DiagHint": {
+    "Ru": "Запустите проверку, чтобы увидеть ошибки, предупреждения и способы их исправления.",
+    "En": "Run a check to see errors, warnings and suggested actions."
+  },
+  "DiagClear": {
+    "Ru": "В выполненных проверках замечаний не найдено.",
+    "En": "No issues found in the checks performed."
+  },
+  "DiagCopy": {
+    "Ru": "Копировать подробности",
+    "En": "Copy details"
+  },
+  "DiagLimits": {
+    "Ru": "Проверка локальная: она не подтверждает доступность из интернета, совместимость всех модов или корректность AI. Файлы не изменяются.",
+    "En": "Checks are local: they do not confirm internet reachability, compatibility of every mod or correct AI behavior. Files are not modified."
+  },
+  "DiagWorking": {
+    "Ru": "Проверяю настройки, контент и порты…",
+    "En": "Checking settings, content and ports…"
+  }
 }

@@ -11,7 +11,7 @@ internal static class AppDiagnostics
     private static ErrorJournal journal = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ACServerManager", "logs"));
     internal static void Initialize(string[] args)
     {
-        var index = Array.FindIndex(args, a => a is "--ui-qa" or "--smoke" or "--window-qa" or "--wizard-qa" or "--wizard-download-qa" or "--runtime-qa" or "--folder-qa");
+        var index = Array.FindIndex(args, a => a is "--ui-qa" or "--smoke" or "--window-qa" or "--wizard-qa" or "--wizard-download-qa" or "--runtime-qa" or "--folder-qa" or "--recovery-qa");
         if (index >= 0 && index + 1 < args.Length) journal = new(Path.Combine(Path.GetFullPath(args[index + 1]), "diagnostics"));
     }
     internal static void Record(Exception error, string operation) => journal.Record(error, operation);

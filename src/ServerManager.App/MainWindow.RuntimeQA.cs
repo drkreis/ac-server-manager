@@ -57,9 +57,18 @@ public partial class MainWindow
                 try { await Start(first, "ready"); } catch (InvalidOperationException ex) when (ex.Message.Contains("TCP ")) { rejected = true; }
                 Check(rejected && !managed.ContainsKey(first.Path), "An occupied port was ignored or a process started before validation.");
             }
+            var backupTexts = first.SavedTexts; backupTexts["server_cfg.ini"] = ConfigText.Set(first.Ini, "SERVER", "NAME", "Backup fixture");
+            var backupPath = first.Save(backupTexts, [])!; first = ServerProfile.Load(first.Path);
+            var restorePlan = ServerBackups.Preview(first.Path, backupPath);
             var one = await Start(first, "ready"); var two = await Start(second, "ready");
             await Task.WhenAll(one.Startup, two.Startup);
             Check(one.Ready && two.Ready, "Two independent servers did not become ready.");
+            Load(first); UpdateProcess();
+            var restoreRefused = false;
+            try { await RestoreBackupAsync(first, restorePlan); } catch (InvalidOperationException) { restoreRefused = true; }
+            Check(restoreRefused && !BackupsButton.IsEnabled && !one.Process.HasExited && ServerBackups.List(first.Path).Count == 1,
+                "Restore did not refuse a running server before any write.");
+            completed.AppendLine("PASS: backup restore checks fresh process state, refuses running servers without writes and disables the history action.");
             var emptyRoot = Path.Combine(output, "empty-root"); Directory.CreateDirectory(emptyRoot);
             ServerRoot.Text = emptyRoot;
             Check(await CommitFolderAsync(ServerRoot) && profile == null && !one.Process.HasExited && !two.Process.HasExited && managed.Count == 2,

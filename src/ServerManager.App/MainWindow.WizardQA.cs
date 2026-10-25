@@ -28,14 +28,18 @@ public partial class MainWindow
         lastSelectedPath=created.Path; ServerRoot.Text=wizard.SelectedServersRoot; GameRoot.Text=wizard.SelectedGamePath;
         await InitializeAsync();
         if(profile?.Path!=created.Path || !Editor.IsEnabled) throw new InvalidOperationException("Created server was not selected in the editor.");
+        var preflight = await CheckDiagnosticsAsync(false, true);
+        if (preflight == null || preflight.Errors != 0) throw new InvalidOperationException("Created server failed startup diagnostics: " + diagnosticText);
+        File.AppendAllText(Path.Combine(output, "wizard-result.txt"), "\nPASS: actual generated configuration passed structured startup diagnostics without blocking errors.");
         var server=await LaunchManagedAsync(created);
         var process=server.Process;
         await server.Startup;
+        File.WriteAllText(Path.Combine(output, "probe-result.txt"), "Managed readiness: " + server.Ready + "\n");
         var healthy=false;
         var stoppedNormally=false;
         try
         {
-            using var client=new HttpClient {Timeout=TimeSpan.FromSeconds(2)};
+            using var client=new HttpClient(new SocketsHttpHandler { UseProxy = false, AllowAutoRedirect = false }) {Timeout=TimeSpan.FromSeconds(2)};
             var port=ConfigText.Get(created.Ini,"SERVER","HTTP_PORT");
             for(var i=0;i<30 && !process.HasExited;i++)
             {
@@ -46,6 +50,7 @@ public partial class MainWindow
                     var network=System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties();
                     var tcp=int.Parse(ConfigText.Get(created.Ini,"SERVER","TCP_PORT"));
                     var udp=int.Parse(ConfigText.Get(created.Ini,"SERVER","UDP_PORT"));
+                    File.AppendAllText(Path.Combine(output, "probe-result.txt"), $"HTTP {(int)response.StatusCode}; TCP listener={network.GetActiveTcpListeners().Any(p => p.Port == tcp)}; UDP listener={network.GetActiveUdpListeners().Any(p => p.Port == udp)}\n");
                     if(response.IsSuccessStatusCode && network.GetActiveTcpListeners().Any(p=>p.Port==tcp) && network.GetActiveUdpListeners().Any(p=>p.Port==udp))
                     {
                         var handshake=await HandshakeQA.Request(tcp,created.Slots.First(s=>s.Ai!="fixed").Model);
@@ -54,7 +59,8 @@ public partial class MainWindow
                         healthy=true; File.WriteAllText(Path.Combine(output,"server-info.json"),await response.Content.ReadAsStringAsync()); break;
                     }
                 }
-                catch(HttpRequestException) {} catch(TaskCanceledException) {}
+                catch(HttpRequestException ex) { File.AppendAllText(Path.Combine(output, "probe-result.txt"), ex.GetType().Name + ": " + DiagnosticSanitizer.Redact(ex.Message) + "\n"); }
+                catch(TaskCanceledException) { File.AppendAllText(Path.Combine(output, "probe-result.txt"), "HTTP timeout\n"); }
             }
         }
         finally

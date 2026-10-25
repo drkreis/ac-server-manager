@@ -46,7 +46,7 @@ public partial class MainWindow
 
     private async Task<bool> CommitFolderAsync(TextBox field)
     {
-        if (loading || saving || folderOperation || stoppingForClose || closing) return false;
+        if (loading || saving || folderOperation || stoppingForClose || closing || checkingDiagnostics) return false;
         var previous = AppliedFolder(field);
         if (SameFolder(field.Text, previous)) { field.Text = previous; return true; }
         string target;
@@ -122,7 +122,7 @@ public partial class MainWindow
         try
         {
             UnsubscribeProfile();
-            profile = null; lastSelectedPath = ""; dirty = false; draftBaseline = null; lastDiagnostics = null; lastCopies = 0;
+            profile = null; lastSelectedPath = ""; dirty = false; draftBaseline = null; lastReport = null; diagnosticsStale = false; RenderDiagnostics();
             ServerList.SelectedItem = null; SlotGrid.ItemsSource = null; SkinListConverter.Imported = [];
             foreach (var field in new[] { NameInput, TrackInput, LayoutInput, MaxInput, TcpInput, UdpInput, HttpInput, FuelInput, DamageInput, TyresInput }) field.Clear();
             PasswordInput.Clear(); AiInput.IsChecked = false; WeatherInput.IsChecked = false; LobbyInput.IsChecked = false;
@@ -131,8 +131,8 @@ public partial class MainWindow
             CurrentTrackName.Text = ""; TrackDetails.Text = ""; TrackPreview.Source = null;
             TrackLayoutPicker.ItemsSource = null; TrackLayoutPicker.Visibility = Visibility.Collapsed;
             TrackLayoutNote.Text = ""; TrackLayoutNote.Visibility = Visibility.Collapsed;
-            Log.Clear(); displayedLog = null; displayedLogVersion = -1; Diagnostics.Clear();
-            StartButton.IsEnabled = false; StopButton.IsEnabled = false; DeleteServerButton.IsEnabled = false;
+            Log.Clear(); displayedLog = null; displayedLogVersion = -1; diagnosticText = "";
+            StartButton.IsEnabled = false; StopButton.IsEnabled = false; DeleteServerButton.IsEnabled = false; BackupsButton.IsEnabled = false;
             ProcessStatus.Text = ""; ProcessStatus.ToolTip = null;
             Editor.IsEnabled = false; Editor.Visibility = Visibility.Collapsed;
             EmptyServerState.Visibility = Visibility.Visible;

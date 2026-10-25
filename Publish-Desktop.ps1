@@ -29,6 +29,9 @@ if ($LASTEXITCODE -ne 0) { throw 'Publishing failed.' }
 foreach ($document in @('LICENSE', 'README.md', 'DESKTOP.md', 'WIZARD.md', 'PROJECT.md', 'RELIABILITY.md')) {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot $document) -Destination $publishDir
 }
+if (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'docs')) {
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'docs') -Destination (Join-Path $publishDir 'docs') -Recurse
+}
 # Use notices from the exact runtime packages selected by the SDK.
 $runtimeConfig = Get-Content -LiteralPath (Join-Path $publishDir 'AssettoServerManager.runtimeconfig.json') -Raw | ConvertFrom-Json
 foreach ($framework in $runtimeConfig.runtimeOptions.includedFrameworks) {

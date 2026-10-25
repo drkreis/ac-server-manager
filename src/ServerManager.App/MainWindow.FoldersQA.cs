@@ -58,7 +58,7 @@ public partial class MainWindow
         }
         Check(profile?.Path == first && SlotGrid.Items.Count == 1, "Initial profile not loaded.");
         var originalCatalog = catalog; var oldProfile = profile;
-        Log.Text = "old server log"; Diagnostics.Text = "old diagnostics";
+        Log.Text = "old server log"; diagnosticText = "old diagnostics";
         ServerRoot.Text = empty; await Enter(ServerRoot);
         void EmptyState()
         {
@@ -68,7 +68,7 @@ public partial class MainWindow
                 "Empty state is unusable or old editor remains visible.");
             Check(SlotGrid.ItemsSource == null && NameInput.Text == "" && TrackInput.Text == "" && LayoutInput.Text == "" && PasswordInput.Password == ""
                 && SlotSummary.Text == "" && SlotsCount.Text == "" && TrackPreview.Source == null && CurrentTrackName.Text == "" && TrackDetails.Text == ""
-                && Log.Text == "" && Diagnostics.Text == "" && draftBaseline == null && lastDiagnostics == null && !StartButton.IsEnabled && !StopButton.IsEnabled && !DeleteServerButton.IsEnabled,
+                && Log.Text == "" && diagnosticText == "" && draftBaseline == null && lastReport == null && !StartButton.IsEnabled && !StopButton.IsEnabled && !DeleteServerButton.IsEnabled,
                 "Old fields, content, log or actions survived clear.");
         }
         EmptyState(); Check(catalog == originalCatalog, "Server-root change unnecessarily reloaded game content.");

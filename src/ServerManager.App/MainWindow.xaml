@@ -4,7 +4,7 @@
  <Grid x:Name="RootContent" Margin="24" PreviewKeyDown="BlockBusyKeyboard" Background="{StaticResource Bg}"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
   <Grid Margin="0,0,0,20" Height="38"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="12"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="12"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="12"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
    <TextBlock FontSize="28" FontWeight="Bold" FontStyle="Italic" FontStretch="Condensed" VerticalAlignment="Center"><Run Text="AC"/><Run Text=" / " Foreground="{StaticResource Accent}"/><Run Text="SERVER MANAGER"/></TextBlock>
-   <Border Grid.Column="1" Background="#30251F" CornerRadius="3" Padding="12,6" VerticalAlignment="Center"><TextBlock Text="v0.6.1 · Preview" FontFamily="Consolas" Foreground="#FF927E" FontSize="12"/></Border>
+   <Border Grid.Column="1" Background="#30251F" CornerRadius="3" Padding="12,6" VerticalAlignment="Center"><TextBlock Text="v0.7.0 · Preview" FontFamily="Consolas" Foreground="#FF927E" FontSize="12"/></Border>
    <Button x:Name="OpenCmButton" Grid.Column="3" Content="{DynamicResource OpenContentManager}" Click="OpenContentManager" Margin="0" Padding="14,8" Height="38" FontSize="14" ToolTip="{DynamicResource OpenContentManager}" AutomationProperties.Name="{DynamicResource OpenContentManager}" shell:WindowChrome.IsHitTestVisibleInChrome="True"/>
    <ComboBox x:Name="LanguagePicker" Grid.Column="5" Width="76" Margin="0" VerticalAlignment="Center" Height="38" Padding="12,8" ToolTip="{DynamicResource L066}" AutomationProperties.Name="{DynamicResource L066}" shell:WindowChrome.IsHitTestVisibleInChrome="True" SelectionChanged="LanguageSelected"><ComboBoxItem Content="RU" Tag="ru"/><ComboBoxItem Content="EN" Tag="en"/></ComboBox>
    <StackPanel Grid.Column="7" Orientation="Horizontal">
@@ -99,10 +99,28 @@
        </Border>
       </Grid>
      </TabItem>
-     <TabItem Header="{DynamicResource L056}"><Grid Margin="20"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions><Button Content="{DynamicResource L057}" Click="ValidateProfile" HorizontalAlignment="Left" Margin="0,0,0,14"/><TextBox x:Name="Diagnostics" Grid.Row="1" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/></Grid></TabItem>
+     <TabItem Header="{DynamicResource L056}">
+      <Grid Margin="20"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+       <DockPanel Margin="0,0,0,12"><Button Content="{DynamicResource L057}" Click="ValidateProfile" DockPanel.Dock="Left"/><TextBlock x:Name="DiagnosticSummary" VerticalAlignment="Center" Foreground="{StaticResource Muted}" TextWrapping="Wrap"/></DockPanel>
+       <StackPanel Grid.Row="1"><WrapPanel x:Name="DiagnosticFilters" Margin="0,0,0,10"><Button Content="{DynamicResource DiagAll}" Tag="all" Click="FilterDiagnostics"/><Button Content="{DynamicResource DiagErrors}" Tag="Error" Click="FilterDiagnostics"/><Button Content="{DynamicResource DiagWarnings}" Tag="Warning" Click="FilterDiagnostics"/><Button Content="{DynamicResource DiagInformation}" Tag="Information" Click="FilterDiagnostics"/></WrapPanel><TextBlock x:Name="DiagnosticStale" Text="{DynamicResource DiagStale}" Foreground="{StaticResource Accent}" Visibility="Collapsed" TextWrapping="Wrap" Margin="0,0,0,10"/></StackPanel>
+       <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto"><StackPanel>
+        <TextBlock x:Name="DiagnosticHint" Text="{DynamicResource DiagHint}" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,14"/>
+        <TextBlock x:Name="DiagnosticAllClear" Text="{DynamicResource DiagClear}" Foreground="#75D9AA" FontSize="18" Visibility="Collapsed" Margin="0,14" TextWrapping="Wrap"/>
+        <ItemsControl x:Name="DiagnosticIssues"><ItemsControl.ItemTemplate><DataTemplate>
+         <Border Background="#22262F" BorderBrush="#343A48" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,4,12"><StackPanel>
+          <DockPanel><TextBlock DockPanel.Dock="Left" Text="{Binding SeverityLabel}" Foreground="{Binding Color}" FontWeight="SemiBold" Margin="0,0,14,0"/><TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap"/></DockPanel>
+          <TextBlock Text="{Binding Detail}" TextWrapping="Wrap" Margin="0,10,0,6"/>
+          <TextBlock Text="{Binding Remedy}" TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,0,0,12"/>
+          <WrapPanel><ItemsControl ItemsSource="{Binding Actions}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel><ItemsControl.ItemTemplate><DataTemplate><Button Content="{Binding Label}" Tag="{Binding}" Click="RunDiagnosticAction" Padding="12,6" FontSize="12"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl><Button Content="{DynamicResource DiagCopy}" Tag="{Binding}" Click="CopyDiagnostic" Padding="12,6" FontSize="12"/></WrapPanel>
+         </StackPanel></Border>
+        </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+       </StackPanel></ScrollViewer>
+       <TextBlock Grid.Row="3" Text="{DynamicResource DiagLimits}" Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,12,0,0"/>
+      </Grid>
+     </TabItem>
      <TabItem Header="{DynamicResource L058}"><Grid Margin="20"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions><DockPanel Margin="0,0,0,12"><CheckBox x:Name="FollowLog" DockPanel.Dock="Right" Content="{DynamicResource FollowLog}" IsChecked="True" Margin="16,0,0,0"/><TextBlock Text="{DynamicResource L059}" Foreground="{StaticResource Muted}" TextWrapping="Wrap"/></DockPanel><TextBox x:Name="Log" Grid.Row="1" IsReadOnly="True" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/></Grid></TabItem>
     </TabControl>
-    <WrapPanel Grid.Row="2" Margin="0,18,0,0"><Button Content="{DynamicResource L060}" Click="SaveProfile" Background="{StaticResource Accent}"/><Button Content="{DynamicResource L061}" Click="ReloadProfile"/><Button x:Name="StartButton" Content="{DynamicResource L062}" Click="StartServer"/><Button x:Name="StopButton" Content="{DynamicResource L063}" Click="StopServer" IsEnabled="False"/><Button Content="{DynamicResource L064}" Click="ConnectLocal" Background="#2D6558"/><Button x:Name="DeleteServerButton" Content="{DynamicResource DeleteServer}" Click="DeleteServer" IsEnabled="False" Foreground="{StaticResource Accent}"/></WrapPanel>
+    <WrapPanel Grid.Row="2" Margin="0,18,0,0"><Button Content="{DynamicResource L060}" Click="SaveProfile" Background="{StaticResource Accent}"/><Button Content="{DynamicResource L061}" Click="ReloadProfile"/><Button x:Name="StartButton" Content="{DynamicResource L062}" Click="StartServer"/><Button x:Name="StopButton" Content="{DynamicResource L063}" Click="StopServer" IsEnabled="False"/><Button Content="{DynamicResource L064}" Click="ConnectLocal" Background="#2D6558"/><Button x:Name="BackupsButton" Content="{DynamicResource BackupsTitle}" Click="OpenBackups" IsEnabled="False"/><Button x:Name="DeleteServerButton" Content="{DynamicResource DeleteServer}" Click="DeleteServer" IsEnabled="False" Foreground="{StaticResource Accent}"/></WrapPanel>
    </Grid>
    <Border x:Name="EmptyServerState" Grid.Column="2" Background="{StaticResource Panel}" CornerRadius="12" Padding="36">
     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="650">
@@ -113,5 +131,12 @@
    </Border>
   </Grid><DockPanel Grid.Row="3" Margin="0,12,0,0"><Button x:Name="ReportButton" DockPanel.Dock="Right" Content="{DynamicResource SaveReport}" ToolTip="{DynamicResource ReportHint}" Click="ExportReport" Margin="16,0,0,0" Padding="12,5" MinHeight="30"/><TextBlock x:Name="Status" Text="{DynamicResource L065}" Foreground="#A8B6AF" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="12"/></DockPanel>
  <Border x:Name="SaveBusyOverlay" Grid.RowSpan="4" Panel.ZIndex="100" Background="Transparent" Cursor="Wait" Visibility="Collapsed"/>
+ <Border x:Name="DiagnosticBusyOverlay" Grid.RowSpan="4" Panel.ZIndex="110" Background="#B3101216" Visibility="Collapsed">
+  <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="480" KeyboardNavigation.TabNavigation="Cycle">
+   <ProgressBar IsIndeterminate="True" Height="4" Foreground="{StaticResource Accent}"/>
+   <TextBlock Text="{DynamicResource DiagWorking}" TextWrapping="Wrap" FontSize="19" Margin="0,18,0,16" HorizontalAlignment="Center"/>
+   <Button x:Name="CancelDiagnosticButton" Content="{DynamicResource L143}" Click="CancelDiagnosticCheck" Margin="0" HorizontalAlignment="Center" MinWidth="130"/>
+  </StackPanel>
+ </Border>
  </Grid>
 </Window>

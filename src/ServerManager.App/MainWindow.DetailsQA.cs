@@ -100,7 +100,7 @@ public partial class MainWindow
         if(dirty || Directory.EnumerateDirectories(Path.Combine(root,"fixture","backups")).Count()!=count) throw new InvalidOperationException("An edit reverted to the baseline created a backup.");
         TrackInput.Text="qa_missing_track";
         await SaveProfileAsync();
-        if(dirty || !Diagnostics.Text.Contains(UiText.T("Не найдены данные выбранной трассы в игре и на сервере.")) || !Status.Text.Contains("замечаний")) throw new InvalidOperationException("Save notices are not shown inline.");
+        if(dirty || !diagnosticText.Contains(UiText.T("Не найдены данные выбранной трассы в игре и на сервере.")) || !Status.Text.Contains("замечаний")) throw new InvalidOperationException("Save notices are not shown inline.");
         var iniPath=Path.Combine(cfg,"server_cfg.ini"); var savedIni=File.ReadAllText(iniPath);
         NameInput.Text="Draft must survive failed save";
         File.AppendAllText(iniPath,"\n; external QA edit\n");

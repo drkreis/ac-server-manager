@@ -66,6 +66,8 @@ public static class ConfigText
             if (GetYaml(text, key) == val) return text;
             return Regex.Replace(text, pattern, m => m.Groups[1].Value + " " + val + (m.Value.Contains('#') ? " " + m.Value[m.Value.IndexOf('#')..] : ""));
         }
+        // These two switches default to false; preserve omitted defaults in plugin documents.
+        if (!value && key is "EnableAi" or "EnableWeatherFx" && Regex.IsMatch(text, @"(?m)^---\s*$")) return text;
         if (Regex.IsMatch(text, @"(?m)^---\s*$")) throw new InvalidOperationException(T("Добавление ключа в многодокументный YAML пока не поддерживается."));
         return text.TrimEnd('\r', '\n') + (text.Contains("\r\n") ? "\r\n" : "\n") + key + ": " + val + "\n";
     }
@@ -151,6 +153,7 @@ public sealed class ServerProfile
         var ini = Ini;
         foreach (var (key, value) in settings)
         {
+            if (key is "FUEL_RATE" or "DAMAGE_MULTIPLIER" or "TYRE_WEAR_RATE" && value.Length == 0 && ConfigText.Get(Ini, "SERVER", key, "__absent__") == "__absent__") continue;
             if (key is "NAME" or "TRACK" && string.IsNullOrWhiteSpace(value)) throw new InvalidOperationException(T("{0} не может быть пустым.", key));
             if (key.EndsWith("_PORT") || key is "MAX_CLIENTS" or "FUEL_RATE" or "DAMAGE_MULTIPLIER" or "TYRE_WEAR_RATE")
             {
@@ -217,6 +220,9 @@ public sealed class ServerProfile
         var changedTexts = texts.Where(pair => !Encode(pair.Key, pair.Value).SequenceEqual(OriginalBytes[pair.Key])).ToDictionary();
         var changedContent = (content ?? []).Where(ContentChanged).ToList();
         if (changedTexts.Count == 0 && changedContent.Count == 0) return null;
+        using var operation = ServerBackups.OperationLock(Path);
+        foreach (var (file, original) in OriginalBytes)
+            if (!File.ReadAllBytes(System.IO.Path.Combine(Path, "cfg", file)).SequenceEqual(original)) throw new InvalidOperationException(T("Файлы изменились после открытия. Перечитайте сервер."));
         var id = DateTime.Now.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N")[..8];
         var backup = System.IO.Path.Combine(Path, "backups", id); Directory.CreateDirectory(backup);
         foreach (var file in OriginalBytes.Keys) File.Copy(System.IO.Path.Combine(Path, "cfg", file), System.IO.Path.Combine(backup, file));
@@ -238,6 +244,9 @@ public sealed class ServerProfile
                 staged.Add((temp, dest, System.IO.Path.Combine(backup, file)));
                 File.WriteAllBytes(temp, Encode(file, text));
             }
+            ServerBackups.WriteSaveManifest(backup, changedContent);
+            foreach (var (file, original) in OriginalBytes)
+                if (!File.ReadAllBytes(System.IO.Path.Combine(Path, "cfg", file)).SequenceEqual(original)) throw new InvalidOperationException(T("Файлы изменились после открытия. Перечитайте сервер."));
             foreach (var entry in staged)
             {
                 if (File.Exists(entry.Destination)) File.Replace(entry.Temp, entry.Destination, null);

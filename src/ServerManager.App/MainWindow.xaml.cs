@@ -92,10 +92,8 @@ public partial class MainWindow : Window
     private string slotFilter = "all", cmPath = "", lastSelectedPath = "";
     private readonly string settingsFile;
     private readonly string[] args;
-    private bool IsTestMode => args.Contains("--ui-qa") || args.Contains("--smoke") || args.Contains("--window-qa") || args.Contains("--wizard-qa") || args.Contains("--wizard-download-qa") || args.Contains("--runtime-qa") || args.Contains("--folder-qa");
-    private Dictionary<string, string>? lastDiagnostics;
+    private bool IsTestMode => args.Contains("--ui-qa") || args.Contains("--smoke") || args.Contains("--window-qa") || args.Contains("--wizard-qa") || args.Contains("--wizard-download-qa") || args.Contains("--runtime-qa") || (args.Contains("--folder-qa") || args.Contains("--recovery-qa"));
     private Dictionary<string, string>? draftBaseline;
-    private int lastCopies;
     public MainWindow(string[] args)
     {
         this.args = args;
@@ -207,7 +205,7 @@ public partial class MainWindow : Window
             if (skinId != null) SkinPicker.SelectedItem = (SkinPicker.ItemsSource as IEnumerable<SkinInfo>)?.FirstOrDefault(s => s.Id == skinId);
             TrackList.SelectedItem = track == null ? null : TrackList.Items.OfType<TrackGroup>().FirstOrDefault(g => g.Id.Equals(track.Id, StringComparison.OrdinalIgnoreCase));
             if (track != null && catalog.FindTrack(track.Id, track.Layout) is { } refreshedTrack) ShowCatalogTrack(refreshedTrack);
-            SlotGrid.Items.Refresh(); UpdateTrack(); RenderDiagnostics();
+            SlotGrid.Items.Refresh(); UpdateTrack(); InvalidateDiagnostics();
         }
         finally { loading = wasLoading; }
         Status.Text = T("Каталог: {0} машин · {1} вариантов трасс · замечаний к метаданным: {2}", catalog.Cars.Count, catalog.Tracks.Count, catalog.Warnings.Count);
@@ -241,7 +239,7 @@ public partial class MainWindow : Window
             }
             else ClearProfile(errors);
             appliedServerRoot = ServerRoot.Text;
-            if (errors.Count > 0) Diagnostics.Text = string.Join("\n", errors);
+            if (errors.Count > 0) diagnosticText = string.Join("\n", errors);
         }
         finally { loading = wasLoading; }
     }
@@ -268,7 +266,7 @@ public partial class MainWindow : Window
             FilterSlots(slotFilter);
             UpdateSlots(); UpdateTrack(); UpdateProcess();
             Log.Text = managed.TryGetValue(p.Path, out var server) ? server.Log.ToString() : "";
-            lastDiagnostics = null; RenderDiagnostics();
+            lastReport = null; diagnosticsStale = false; RenderDiagnostics();
             dirty = false; Status.Text = T("Загружен ") + p.Folder;
             try { draftBaseline = Build(); } catch (InvalidOperationException) { draftBaseline = null; }
         }
@@ -280,13 +278,13 @@ public partial class MainWindow : Window
         MarkDirty(); UpdateSlots();
         if (e.PropertyName == nameof(Slot.Ai)) Dispatcher.BeginInvoke(() => CollectionViewSource.GetDefaultView(SlotGrid.ItemsSource)?.Refresh());
     }
-    private void MarkDirty() { if (!loading) { dirty = true; Status.Text = T("Есть несохранённые изменения"); } }
+    private void MarkDirty() { if (!loading) { dirty = true; InvalidateDiagnostics(); Status.Text = T("Есть несохранённые изменения"); } }
     private void FieldChanged(object sender, RoutedEventArgs e)
     {
         MarkDirty();
         if (!loading && (sender == TrackInput || sender == LayoutInput)) UpdateTrack();
     }
-    private bool Discard() => !saving && !folderOperation && (!dirty || AppDialog.Confirm(this, T("Отбросить несохранённые изменения?"), T("Настройки"), "Отбросить"));
+    private bool Discard() => !checkingDiagnostics && !saving && !folderOperation && (!dirty || AppDialog.Confirm(this, T("Отбросить несохранённые изменения?"), T("Настройки"), "Отбросить"));
     private void Fail(Exception e) { AppDiagnostics.Record(e, "User operation"); Status.Text = e.Message; AppDialog.Notify(this, e.Message, T("Ошибка")); }
     private void UpdateSlots()
     {
@@ -360,7 +358,7 @@ public partial class MainWindow : Window
     private void ReloadProfile(object sender, RoutedEventArgs e) { if (profile != null && Discard()) try { Load(ServerProfile.Load(profile.Path)); } catch (Exception ex) { Fail(ex); } }
     private async void BrowseServers(object sender, RoutedEventArgs e)
     {
-        if (saving || folderOperation || browsingFolder) return;
+        if (saving || folderOperation || browsingFolder || checkingDiagnostics) return;
         browsingFolder = true;
         try
         {
@@ -372,7 +370,7 @@ public partial class MainWindow : Window
     }
     private async void BrowseGame(object sender, RoutedEventArgs e)
     {
-        if (saving || folderOperation || browsingFolder) return;
+        if (saving || folderOperation || browsingFolder || checkingDiagnostics) return;
         browsingFolder = true;
         try
         {
@@ -395,34 +393,6 @@ public partial class MainWindow : Window
             ["TCP_PORT"]=TcpInput.Text, ["UDP_PORT"]=UdpInput.Text, ["HTTP_PORT"]=HttpInput.Text, ["PASSWORD"]=PasswordInput.Password,
             ["FUEL_RATE"]=FuelInput.Text, ["DAMAGE_MULTIPLIER"]=DamageInput.Text, ["TYRE_WEAR_RATE"]=TyresInput.Text, ["REGISTER_TO_LOBBY"]=LobbyInput.IsChecked == true ? "1" : "0" }, AiInput.IsChecked == true, WeatherInput.IsChecked == true);
     }
-    private List<string> Warnings(Dictionary<string, string> texts)
-    {
-        if (catalog == null) return [T("Каталог не загружен: наличие контента в игре не проверено.")];
-        return catalog.Validate(profile!, texts);
-    }
-    private void ValidateProfile(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            lastDiagnostics = Build(); lastCopies = (catalog?.PrepareMissingContent(profile!, lastDiagnostics) ?? []).Count;
-            RenderDiagnostics();
-            Pages.SelectedIndex = 3; Status.Text = T("Проверка завершена");
-        }
-        catch (Exception ex) { Fail(ex); }
-    }
-    private void RenderDiagnostics()
-    {
-        if (profile == null) { Diagnostics.Clear(); return; }
-        if (lastDiagnostics == null)
-        {
-            Diagnostics.Text = T("Проверка охватывает конфиги и установленный контент. Доступность из интернета проверяется отдельно.");
-            return;
-        }
-        var warnings = Warnings(lastDiagnostics);
-        Diagnostics.Text = warnings.Count == 0 ? T("✓ Проблем по выполненным проверкам не найдено.") : string.Join("\n\n", warnings.Select(w => "• " + w));
-        Diagnostics.AppendText(T("\n\nПри сохранении будет подготовлено {0} недостающих файлов.\nПроверка не подтверждает доступность из интернета и совместимость модов с клиентами друзей.", lastCopies));
-        if (catalog?.Warnings.Count > 0) Diagnostics.AppendText(T("\n\nЗамечания к метаданным каталога:\n") + string.Join("\n", catalog.Warnings.Take(10)));
-    }
     private async void SaveProfile(object sender, RoutedEventArgs e)
     {
         try { await SaveProfileAsync(); }
@@ -430,26 +400,30 @@ public partial class MainWindow : Window
     }
     private async Task SaveProfileAsync()
     {
-        if (profile == null || saving || folderOperation) return;
+        if (profile == null || saving || folderOperation || checkingDiagnostics) return;
         SlotGrid.CommitEdit(DataGridEditingUnit.Cell, true);
         SlotGrid.CommitEdit(DataGridEditingUnit.Row, true);
         var p = profile;
         var draft = dirty ? Build() : null;
         var texts = draft == null || draftBaseline != null && draft.All(pair => draftBaseline.GetValueOrDefault(pair.Key) == pair.Value) ? p.SavedTexts : draft;
-        var warnings = Warnings(texts); var copies = catalog?.PrepareMissingContent(p, texts) ?? [];
+        var selectedCatalog = catalog; var snapshot = CaptureDiagnosticInput();
         saving = true;
         SaveBusyOverlay.Visibility = Visibility.Visible;
         Status.Text = T("Сохраняю конфиги и готовлю серверные данные…");
         try
         {
+            var copies = await Task.Run(() => selectedCatalog?.PrepareMissingContent(p, texts) ?? []);
             var backup = await Task.Run(() => p.Save(texts, copies));
             if (backup != null) p.AcceptSaved(ServerProfile.Load(p.Path));
             dirty = false;
             draftBaseline = draft ?? draftBaseline;
             foreach (var row in ServerList.Items.OfType<ServerRow>().Where(r => r.Profile.Path == p.Path)) row.RefreshProfile();
-            lastDiagnostics = texts; lastCopies = copies.Count; RenderDiagnostics();
+            DiagnosticReport report;
+            try { report = await Task.Run(() => ServerDiagnostics.Analyze(snapshot with { Baseline = null }, selectedCatalog)); }
+            catch (Exception ex) { AppDiagnostics.Record(ex, "Post-save validation"); report = new([new("validation.unavailable", DiagnosticSeverity.Warning, "Проверка недоступна", "Файлы сохранены, но проверку не удалось завершить.", "Запустите проверку ещё раз.", [])], DateTimeOffset.Now); }
+            SetDiagnostics(report); var warnings = report.Errors + report.Warnings;
             Status.Text = backup == null ? T("Изменений нет — новый бэкап не нужен.") : T("Сохранено · подготовлено {0} файлов · бэкап: {1} · для применения нужен перезапуск сервера", copies.Count, backup);
-            if (warnings.Count > 0) Status.Text += T(" · замечаний: {0} — вкладка «Проверка»", warnings.Count);
+            if (warnings > 0) Status.Text += T(" · замечаний: {0} — вкладка «Проверка»", warnings);
         }
         finally { saving = false; SaveBusyOverlay.Visibility = Visibility.Collapsed; }
     }
@@ -591,6 +565,7 @@ public partial class MainWindow : Window
         StartButton.IsEnabled = !ours && row?.State is ServerRunState.Stopped or ServerRunState.Failed && !pendingStarts.Contains(profile.Path);
         StopButton.IsEnabled = ours && server?.Stopping != true;
         DeleteServerButton.IsEnabled = !ours && row?.CanDelete == true;
+        BackupsButton.IsEnabled = !ours && row?.CanDelete == true;
         ProcessStatus.Text = row?.StatusLabel ?? T("Проверяю статус…");
         ProcessStatus.ToolTip = row?.StatusHint;
         ProcessStatus.Foreground = (Brush)new BrushConverter().ConvertFromString(row?.StatusColor ?? "#747D8D")!;
@@ -620,7 +595,13 @@ public partial class MainWindow : Window
         try
         {
             if (dirty) throw new InvalidOperationException(T("Сначала сохраните изменения или перечитайте конфигурацию."));
-            await LaunchManagedAsync(ServerProfile.Load(profile.Path));
+            var report = await CheckDiagnosticsAsync(false, true);
+            if (report == null) return;
+            if (report.Errors > 0) { Pages.SelectedIndex = 3; Status.Text = T("Исправьте ошибки перед запуском сервера."); return; }
+            var saved = ServerProfile.Load(profile.Path);
+            if (profile.OriginalBytes.Any(p => !saved.OriginalBytes[p.Key].SequenceEqual(p.Value)))
+            { await CheckDiagnosticsAsync(true, true); return; }
+            await LaunchManagedAsync(saved);
         }
         catch (Exception ex) { Fail(ex); }
     }
@@ -630,7 +611,7 @@ public partial class MainWindow : Window
         {
             if (profile == null) return;
             var saved = ServerProfile.Load(profile.Path); var port = ConfigText.Get(saved.Ini, "SERVER", "HTTP_PORT");
-            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+            using var client = new HttpClient(new SocketsHttpHandler { UseProxy = false, AllowAutoRedirect = false }) { Timeout = TimeSpan.FromSeconds(3) };
             var info = await client.GetStringAsync($"http://127.0.0.1:{port}/INFO");
             using var json = JsonDocument.Parse(info);
             var actualTrack = json.RootElement.GetProperty("track").GetString() ?? "";

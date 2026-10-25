@@ -211,6 +211,7 @@ public partial class MainWindow
 
     private async Task<bool> PrepareCloseAsync(bool persistSettings)
     {
+        if (checkingDiagnostics) { diagnosticsCancellation?.Cancel(); return false; }
         if (saving || folderOperation || stoppingForClose || pendingStarts.Count > 0) return false;
         if (!Discard()) return false;
         var running = managed.Where(pair => !pair.Value.Process.HasExited).ToArray();
@@ -232,6 +233,7 @@ public partial class MainWindow
     {
         var runtime = string.Join(Environment.NewLine, serverRows.Select((row, i) => $"Server {i + 1}: {row.State}"));
         if (profile != null && managed.TryGetValue(profile.Path, out var server)) runtime += "\n\nSelected server output (bounded):\n" + server.Log;
+        if (lastReport != null) runtime += "\n\nValidation (" + lastReport.CheckedAt.ToString("O") + ", stale=" + diagnosticsStale + "):\n" + string.Join("\n\n", lastReport.Findings.Select(f => f.CopyText));
         return AppDiagnostics.Report(runtime, (GameRoot.Text, "<game>"), (ServerRoot.Text, "<servers>"), (cmPath, "<ContentManager>"));
     }
     private void ExportReport(object sender, RoutedEventArgs e)

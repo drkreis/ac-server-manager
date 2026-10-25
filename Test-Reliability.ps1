@@ -43,6 +43,19 @@ try {
         Get-Content -LiteralPath (Join-Path $folderResults 'folder-result.txt')
     }
     finally { $folderProcess.Dispose() }
+    $recoveryResults = Join-Path $OutputDirectory 'recovery-results'
+    $recoveryProcess = Start-Process -FilePath $app -ArgumentList @('--recovery-qa', ('"' + $recoveryResults + '"')) -WindowStyle Hidden -PassThru
+    try {
+        if (-not $recoveryProcess.WaitForExit(90000)) { $recoveryProcess.Kill(); throw 'Recovery UI checks exceeded ninety seconds.' }
+        if ($recoveryProcess.ExitCode -ne 0) {
+            $errorFile = Join-Path $recoveryResults 'smoke-error.txt'
+            if (Test-Path -LiteralPath $errorFile) { Get-Content -LiteralPath $errorFile }
+            throw ('Recovery UI checks failed: ' + $recoveryProcess.ExitCode)
+        }
+        Get-Content -LiteralPath (Join-Path $recoveryResults 'recovery-result.txt')
+    }
+    finally { $recoveryProcess.Dispose() }
+
 }
 finally {
     # Also handle a manager crash before its own finally can finish. Only the fresh test output is eligible.

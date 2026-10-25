@@ -1,6 +1,6 @@
-# AC Server Manager 0.6 reliability notes
+# AC Server Manager 0.7 reliability and recovery notes
 
-0.6 is a local preview focused on reliability. Building this checkout does not publish anything to GitHub. These changes are a step toward 1.0, not a declaration of production stability.
+0.7 is a local preview focused on actionable diagnostics and backup recovery, building on the 0.6 reliability work. Building this checkout does not publish anything to GitHub. These changes are a step toward 1.0, not a declaration of production stability.
 
 ## Changes
 
@@ -11,6 +11,10 @@
 - Double starts are rejected, stopped process resources are released on restart, stop cancels startup polling, and early/unexpected exits retain the final output and a distinct failure status. A failed restart preserves the previous error log until a replacement process starts successfully.
 - Output is read in bounded chunks off the UI thread, with lines capped at 16,384 characters and each server's visible history capped at 100,000 characters. UI text refresh is limited to five times per second. **Follow log** can be disabled.
 - Manager errors are saved locally with rotation (one current and one previous file, approximately 256KB each). **Save report** exports version/environment information, process states, manager errors and the selected server's recent bounded output. Configurations and game files are excluded. Known password, token, key and identity fields, the user-profile path and selected local paths are redacted. Arbitrary plugin messages cannot be guaranteed anonymous: review before sharing. No automatic upload or telemetry is added.
+
+- Structured diagnostics operate on an immutable draft snapshot off the UI thread and support cancellation. Errors block startup; warnings and information are separately filterable. External configuration changes are identified before launch. Findings link to settings/catalog/folders and can be exported with the current report.
+- Backup history supports complete legacy copies and new hash manifests. A preview records current and stored hashes; restore rechecks the plan, acquires a per-server save/restore lock, captures a safety backup, stages replacement bytes and checks targets again before commit. Ordinary failures roll back applied files where safe. Content restoration is opt-in and restricted to listed supported data files; recorded absences become explicit removals. Unchanged restore creates no new copy.
+- Restore is available only for stopped local servers. Fresh process checks reject managed/external processes and unreadable process identities. Paths are confined to the chosen server and backup; game targets, links, traversal and unsupported file types are rejected. Incomplete or invalid pre-recovery configurations are retained in the safety copy for manual recovery, but are not offered as a valid automatic undo.
 
 Server configuration backups/rollback remain separate from application settings recovery. A multi-file server save is not a transaction that can guarantee recovery from power loss.
 
@@ -30,10 +34,12 @@ The process checks cover two simultaneous servers, isolated normal shutdown, fin
 To test an existing regular or portable build, supply its directory and a fresh output path:
 
 ```powershell
-.\Test-Reliability.ps1 -ApplicationDirectory .\artifacts\desktop-0.6.0 -OutputDirectory .\artifacts\my-reliability-check
+.\Test-Reliability.ps1 -ApplicationDirectory .\artifacts\desktop-0.7.0 -OutputDirectory .\artifacts\my-reliability-check
 ```
 
-GitHub Actions runs these process checks after its core tests and portable build. UI/catalog/wizard checks needing installed game content remain separate; see [README.md](README.md).
+Since 0.7 the script also runs `--recovery-qa` with fake content: actionable draft errors/warnings, severity filters, RU/EN resources, affected-field focus, stale markers, cancellation, omitted optional defaults, read-only checking, backup previews and privacy, confirmation Cancel, exact configuration restore/editor reload, safety undo and stale/incomplete backup refusal. Runtime checks verify that a running server cannot be restored. Core tests additionally inject a mid-commit sharing violation and verify rollback, legacy backups, optional content removal/undo, manifest tampering and path confinement.
+
+GitHub Actions runs these process and game-free UI checks after its core tests and portable build. UI/catalog/wizard checks needing installed game content remain separate; see [README.md](README.md).
 
 ## Before 1.0
 
@@ -42,8 +48,11 @@ GitHub Actions runs these process checks after its core tests and portable build
 - Exercise close/stop/save interaction, interrupted operations and disk failures. Test unexpected process termination and very slow initialization with real server versions.
 - Confirm normal shutdown with supported AssettoServer versions and plugins; a plugin which hangs may still require confirmed forced termination.
 - Initial local readiness is not continuous health monitoring, an AC client handshake or internet reachability. A process left unconfirmed after the initial timeout is not automatically retried or restarted.
-- Plan structured diagnostics and a backup restore interface separately. Presets, cloning, automatic updates and remote server management are outside 0.6.
+- Test diagnostics and restoration against more server/plugin configurations and manually managed historical backups. Presets, cloning, automatic updates and remote server management remain outside 0.7.
 
 ## Implementation references
 
 The native console behavior follows Microsoft's [console creation](https://learn.microsoft.com/en-us/windows/console/creation-of-a-console), [AttachConsole](https://learn.microsoft.com/en-us/windows/console/attachconsole) and [GenerateConsoleCtrlEvent](https://learn.microsoft.com/en-us/windows/console/generateconsolectrlevent) documentation. AssettoServer uses the .NET host lifecycle in its [Program.cs](https://github.com/compujuckel/AssettoServer/blob/master/AssettoServer/Program.cs) and publishes its shutdown hooks in [ACServer.cs](https://github.com/compujuckel/AssettoServer/blob/master/AssettoServer/Server/ACServer.cs). Compatibility is verified by tests; the fixture alone cannot establish it for every server/plugin version.
+
+
+Diagnostic checksum behavior is checked against AssettoServer's [ChecksumManager.cs](https://github.com/compujuckel/AssettoServer/blob/master/AssettoServer/Server/ChecksumManager.cs). Alternative car archives and explicit missing-car-checksum exceptions are recognized; special CSP track handling remains a warning requiring review. Local readiness and connection checks use direct loopback HTTP without redirects or an HTTP proxy. Matching local bytes alone does not guarantee successful client loading.
