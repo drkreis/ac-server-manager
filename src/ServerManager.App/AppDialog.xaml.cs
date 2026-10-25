@@ -15,7 +15,12 @@ public partial class AppDialog : Window
         if (!confirmation) { CancelButton.Visibility = Visibility.Collapsed; CancelButton.IsDefault = false; AcceptButton.IsDefault = true; }
     }
     public static bool Confirm(Window owner, string message, string title, string accept)
-        => new AppDialog(message, title, accept, true) { Owner = owner }.ShowDialog() == true;
+    {
+        var dialog = new AppDialog(message, title, accept, true);
+        if (owner.IsVisible) dialog.Owner = owner;
+        else dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        return dialog.ShowDialog() == true;
+    }
     public static void Notify(Window? owner, string message, string title)
     {
         var dialog = new AppDialog(message, title, "Понятно", false);

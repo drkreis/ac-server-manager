@@ -12,7 +12,7 @@ namespace ServerManager.App;
 
 public partial class MainWindow
 {
-    private void BlockBusyKeyboard(object sender, KeyEventArgs e) { if (saving || folderOperation) e.Handled = true; }
+    private void BlockBusyKeyboard(object sender, KeyEventArgs e) { if (saving || folderOperation || stoppingForClose) e.Handled = true; }
     private void ServerMenuOpening(object sender, ContextMenuEventArgs e)
     {
         if (saving || folderOperation || e.OriginalSource is not DependencyObject source || ItemsControl.ContainerFromElement(ServerList, source) is not ListBoxItem item)
@@ -66,7 +66,7 @@ public partial class MainWindow
             await EnsureFolderStopped(oldPath);
             target = ServerRename.Move(ServerRoot.Text, oldPath, name, GameRoot.Text);
             row.Profile.Relocate(target);
-            if (managed.Remove(oldPath, out var old)) old.Process.Dispose();
+            if (managed.Remove(oldPath, out var old)) { await Task.WhenAll(old.Completion, old.Startup); old.Dispose(); }
             if (profile == row.Profile)
             {
                 lastSelectedPath = target; ProfileTitle.Text = row.Folder;
@@ -119,7 +119,7 @@ public partial class MainWindow
             // Recycle only: no fallback to permanent deletion if Windows cannot recycle the folder.
             FileSystem.DeleteDirectory(path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin, UICancelOption.ThrowException);
             if (Directory.Exists(path)) throw new IOException(T("Папка сервера не была удалена."));
-            if (managed.Remove(path, out var old)) old.Process.Dispose();
+            if (managed.Remove(path, out var old)) { await Task.WhenAll(old.Completion, old.Startup); old.Dispose(); }
             RemoveServerRow(path);
             await RefreshProcessStatesAsync();
             Status.Text = T("Сервер перемещён в корзину: {0}", selected.Folder);

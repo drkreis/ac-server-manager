@@ -61,11 +61,22 @@ public record RoleChoice(string Id, string RussianName) : INotifyPropertyChanged
     public override string ToString() => Name;
 }
 public record UserSettings(string ServersRoot, string GameRoot, string ContentManager, string Language = "en");
-public sealed class ManagedServer(Process process)
+public sealed class ManagedServer(Process process) : IDisposable
 {
     public Process Process { get; } = process;
     public bool Starting { get; set; } = true;
-    public StringBuilder Log { get; } = new();
+    public bool Ready { get; set; }
+    public bool Stopping { get; set; }
+    public bool StopRequested { get; set; }
+    public bool Failed { get; set; }
+    public BoundedLog Log { get; } = new();
+    public CancellationTokenSource StartupCancellation { get; } = new();
+    public Task Readers { get; set; } = Task.CompletedTask;
+    public Task Completion { get; set; } = Task.CompletedTask;
+    public Task Startup { get; set; } = Task.CompletedTask;
+    internal StreamReader? Output { get; init; }
+    internal StreamReader? Error { get; init; }
+    public void Dispose() { Output?.Dispose(); Error?.Dispose(); StartupCancellation.Dispose(); Process.Dispose(); }
 }
 
 public partial class MainWindow : Window
@@ -81,7 +92,7 @@ public partial class MainWindow : Window
     private string slotFilter = "all", cmPath = "", lastSelectedPath = "";
     private readonly string settingsFile;
     private readonly string[] args;
-    private bool IsTestMode => args.Contains("--ui-qa") || args.Contains("--smoke") || args.Contains("--window-qa") || args.Contains("--wizard-qa") || args.Contains("--wizard-download-qa");
+    private bool IsTestMode => args.Contains("--ui-qa") || args.Contains("--smoke") || args.Contains("--window-qa") || args.Contains("--wizard-qa") || args.Contains("--wizard-download-qa") || args.Contains("--runtime-qa");
     private Dictionary<string, string>? lastDiagnostics;
     private Dictionary<string, string>? draftBaseline;
     private int lastCopies;
@@ -111,6 +122,8 @@ public partial class MainWindow : Window
         Loaded += async (_, _) => { if (!IsTestMode) { await InitializeAsync(); StoreSettings(); } };
         Closing += WindowClosing;
         processTimer.Tick += async (_, _) => await RefreshProcessStatesAsync();
+        logTimer.Tick += (_, _) => RefreshLog();
+        if (!IsTestMode) logTimer.Start();
         SourceInitialized += (_, _) => NativeWindow.Attach(this);
         StateChanged += (_, _) =>
         {
@@ -262,7 +275,7 @@ public partial class MainWindow : Window
         if (!loading && (sender == TrackInput || sender == LayoutInput)) UpdateTrack();
     }
     private bool Discard() => !saving && !folderOperation && (!dirty || AppDialog.Confirm(this, T("Отбросить несохранённые изменения?"), T("Настройки"), "Отбросить"));
-    private void Fail(Exception e) { Status.Text = e.Message; AppDialog.Notify(this, e.Message, T("Ошибка")); }
+    private void Fail(Exception e) { AppDiagnostics.Record(e, "User operation"); Status.Text = e.Message; AppDialog.Notify(this, e.Message, T("Ошибка")); }
     private void UpdateSlots()
     {
         if (profile == null) return;
@@ -338,8 +351,8 @@ public partial class MainWindow : Window
     }
     private void StoreSettings()
     {
-        try { Directory.CreateDirectory(Path.GetDirectoryName(settingsFile)!); File.WriteAllText(settingsFile, JsonSerializer.Serialize(new UserSettings(ServerRoot.Text, GameRoot.Text, cmPath, UiText.Language), new JsonSerializerOptions { WriteIndented = true })); }
-        catch (Exception e) { Status.Text = T("Настройки приложения не сохранены: ") + e.Message; }
+        try { SafeJsonStore.Save(settingsFile, new UserSettings(ServerRoot.Text, GameRoot.Text, cmPath, UiText.Language), ManagerSettings.Valid); }
+        catch (Exception e) { AppDiagnostics.Record(e, "Saving settings"); Status.Text = T("Настройки приложения не сохранены: ") + e.Message; }
     }
     private Dictionary<string, string> Build()
     {
@@ -537,8 +550,9 @@ public partial class MainWindow : Window
         if (profile == null) return;
         var ours = managed.TryGetValue(profile.Path, out var server) && !server.Process.HasExited;
         var row = ServerList.Items.OfType<ServerRow>().FirstOrDefault(r => r.Profile.Path.Equals(profile.Path, StringComparison.OrdinalIgnoreCase));
-        StartButton.IsEnabled = !ours && row?.IsRunning != true; StopButton.IsEnabled = ours;
-        DeleteServerButton.IsEnabled = !ours && row?.State == ServerRunState.Stopped;
+        StartButton.IsEnabled = !ours && row?.State is ServerRunState.Stopped or ServerRunState.Failed && !pendingStarts.Contains(profile.Path);
+        StopButton.IsEnabled = ours && server?.Stopping != true;
+        DeleteServerButton.IsEnabled = !ours && row?.CanDelete == true;
         ProcessStatus.Text = row?.StatusLabel ?? T("Проверяю статус…");
         ProcessStatus.ToolTip = row?.StatusHint;
         ProcessStatus.Foreground = (Brush)new BrushConverter().ConvertFromString(row?.StatusColor ?? "#747D8D")!;
@@ -556,66 +570,21 @@ public partial class MainWindow : Window
         foreach (var row in ServerList.Items.OfType<ServerRow>())
         {
             if (managed.TryGetValue(row.Profile.Path, out var server) && !server.Process.HasExited)
-                row.SetStatus(server.Starting ? ServerRunState.Starting : ServerRunState.Managed, [server.Process.Id]);
+                row.SetStatus(server.Stopping ? ServerRunState.Stopping : server.Starting ? ServerRunState.Starting : server.Ready ? ServerRunState.Managed : ServerRunState.Unready, [server.Process.Id]);
+            else if (pendingStarts.Contains(row.Profile.Path)) row.SetStatus(ServerRunState.Starting, []);
             else if (processSnapshot.ByFolder.TryGetValue(row.Profile.Path, out var ids)) row.SetStatus(ServerRunState.External, ids);
-            else row.SetStatus(processSnapshot.HasUnreadablePaths ? ServerRunState.Unknown : ServerRunState.Stopped, []);
+            else row.SetStatus(processSnapshot.HasUnreadablePaths ? ServerRunState.Unknown : server?.Failed == true ? ServerRunState.Failed : ServerRunState.Stopped, []);
         }
     }
     private async void StartServer(object sender, RoutedEventArgs e)
     {
+        if (profile == null || saving || folderOperation || stoppingForClose) return;
         try
         {
-            if (profile == null) return;
             if (dirty) throw new InvalidOperationException(T("Сначала сохраните изменения или перечитайте конфигурацию."));
-            var path = profile.Path; var current = ServerProfile.Load(path);
-            var tcp = new[] { int.Parse(ConfigText.Get(current.Ini, "SERVER", "TCP_PORT")), int.Parse(ConfigText.Get(current.Ini, "SERVER", "HTTP_PORT")) };
-            var udp = int.Parse(ConfigText.Get(current.Ini, "SERVER", "UDP_PORT"));
-            var network = IPGlobalProperties.GetIPGlobalProperties();
-            if (network.GetActiveTcpListeners().Any(l => tcp.Contains(l.Port)) || network.GetActiveUdpListeners().Any(l => l.Port == udp)) throw new InvalidOperationException(T("Порт сервера уже занят. Возможно, работает старый менеджер или другая установка."));
-            var process = new Process { StartInfo = new ProcessStartInfo(Path.Combine(path, "AssettoServer.exe")) { WorkingDirectory = path, UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true, StandardOutputEncoding = Encoding.UTF8, StandardErrorEncoding = Encoding.UTF8 } };
-            process.Start(); var item = new ManagedServer(process); managed[path] = item;
-            Log.Clear(); UpdateProcess(); Status.Text = T("Процесс запущен; ожидаю ответа HTTP…");
-            _ = Pump(path, item, process.StandardOutput); _ = Pump(path, item, process.StandardError); _ = WaitExit(path, item);
-            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
-            for (var i = 0; i < 10 && !process.HasExited; i++)
-            {
-                await Task.Delay(1000);
-                try { using var response = await client.GetAsync($"http://127.0.0.1:{tcp[1]}/INFO"); if (!response.IsSuccessStatusCode) continue; item.Starting = false; UpdateProcess(); if (profile?.Path == path) Status.Text = T("Сервер готов локально. Нажмите «Подключиться»."); return; }
-                catch (HttpRequestException) { } catch (TaskCanceledException) { }
-            }
-            item.Starting = false; UpdateProcess();
-            if (profile?.Path == path && !process.HasExited) Status.Text = T("Процесс работает, но HTTP пока не ответил. Проверьте журнал.");
+            await LaunchManagedAsync(ServerProfile.Load(profile.Path));
         }
         catch (Exception ex) { Fail(ex); }
-    }
-    private async Task Pump(string path, ManagedServer server, StreamReader reader)
-    {
-        try
-        {
-            while (await reader.ReadLineAsync() is { } line)
-            {
-                var safe = Regex.Replace(line, @"(?i)((?:password|token|secret|api[_-]?key)\s*[:=]\s*)\S+", T("$1[скрыто]"));
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    server.Log.AppendLine(safe);
-                    if (server.Log.Length > 100000) server.Log.Remove(0, server.Log.Length - 70000);
-                    if (!closing && profile?.Path == path) { Log.Text = server.Log.ToString(); Log.ScrollToEnd(); }
-                });
-            }
-        }
-        catch (Exception e) when (e is IOException or ObjectDisposedException or TaskCanceledException) { }
-    }
-    private async Task WaitExit(string path, ManagedServer server)
-    {
-        await server.Process.WaitForExitAsync();
-        if (closing) return;
-        await RefreshProcessStatesAsync();
-        await Dispatcher.InvokeAsync(() => { server.Log.AppendLine(T("Процесс завершён, код ") + server.Process.ExitCode); if (profile?.Path == path) { UpdateProcess(); Log.Text = server.Log.ToString(); Status.Text = T("Сервер остановлен"); } });
-    }
-    private void StopServer(object sender, RoutedEventArgs e)
-    {
-        if (profile == null || !managed.TryGetValue(profile.Path, out var server)) return;
-        try { if (!server.Process.HasExited) server.Process.Kill(); } catch (Exception ex) { Fail(ex); }
     }
     private async void ConnectLocal(object sender, RoutedEventArgs e)
     {
@@ -675,17 +644,6 @@ public partial class MainWindow : Window
             Environment.GetFolderPath(Environment.SpecialFolder.Desktop), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"),
             Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)]);
     }
-    private void WindowClosing(object? sender, CancelEventArgs e)
-    {
-        if (IsTestMode) { closing = true; processTimer.Stop(); return; }
-        if (!Discard()) { e.Cancel = true; return; }
-        var running = managed.Values.Where(s => !s.Process.HasExited).ToList();
-        if (running.Count > 0 && !AppDialog.Confirm(this, T("Закрытие остановит серверы, запущенные этим менеджером. Закрыть?"), T("Работающие серверы"), "Закрыть")) { e.Cancel = true; return; }
-        closing = true;
-        processTimer.Stop();
-        foreach (var server in running) server.Process.Kill();
-        if (!IsTestMode) StoreSettings();
-    }
     private void MinimizeWindow(object sender, RoutedEventArgs e) => SystemCommands.MinimizeWindow(this);
     private void ToggleMaximize(object sender, RoutedEventArgs e)
     {
@@ -732,7 +690,7 @@ public partial class MainWindow : Window
             var fakeManaged = new ManagedServer(fakeManagedProcess); managed[selected.Path] = fakeManaged;
             UpdateProcess();
             if (selectedRow.State != ServerRunState.Starting || !StopButton.IsEnabled || DeleteServerButton.IsEnabled) throw new InvalidOperationException("Managed starting status failed.");
-            fakeManaged.Starting = false; UpdateProcess();
+            fakeManaged.Starting = false; fakeManaged.Ready = true; UpdateProcess();
             if (selectedRow.State != ServerRunState.Managed || DeleteServerButton.IsEnabled) throw new InvalidOperationException("Managed running status failed.");
             managed.Remove(selected.Path);
         }

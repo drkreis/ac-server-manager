@@ -1,6 +1,6 @@
 # AC Server Manager
 
-**v0.5.2 · Preview** is a Windows application for creating and configuring local [AssettoServer](https://assettoserver.org/) installations. Its main use case is free roam with friends and AI traffic. This is the source version; available download versions are listed in Releases and may differ from the current checkout.
+**v0.6.0 · Preview** is a Windows application for creating and configuring local [AssettoServer](https://assettoserver.org/) installations. Its main use case is free roam with friends and AI traffic. This is the source version; available download versions are listed in Releases and may differ from the current checkout.
 
 The interface is available in Russian and English. The application is built with C#, WPF and .NET 10.
 
@@ -17,10 +17,12 @@ The interface is available in Russian and English. The application is built with
 - Checks for missing content and file differences between the game and the server.
 - Server start, stop and logs; status indicators for all discovered servers, including those started outside the manager.
 - Open Content Manager and connect to a local server.
+- Confirm local readiness from a valid `/INFO` response for the selected track; distinguish unconfirmed startup, stopping and unexpected exits.
+- Recover application preferences from the last valid settings backup; export a diagnostic report with known secret values redacted.
 - Save only changed files, with backups for real changes, stable editor/list controls and protection against overwriting changes made by another application. Unchanged or reverted drafts do not create backups.
 - Rename stopped server folders from the context menu while preserving drafts, files and the separate in-game server name.
 
-See the [user guide](DESKTOP.md) and [server creation guide](WIZARD.md) for details and limitations. The [project guide](PROJECT.md) explains every source file, startup, builds and manual GitHub publishing.
+See [0.6 reliability and test notes](RELIABILITY.md), the [user guide](DESKTOP.md) and [server creation guide](WIZARD.md) for details and limitations. The [project guide](PROJECT.md) explains every source file, startup, builds and manual GitHub publishing.
 
 ## Download the application
 
@@ -36,7 +38,7 @@ Building on Windows requires the **.NET 10 SDK**, available through [Microsoft's
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tests
 ```
 
-The output is placed in `artifacts/desktop-0.5.2/`. The build script derives the default folder from the project's version; you can override it with `-OutputDirectory`. Run `Start-Manager.cmd` from the project root or `AssettoServerManager.exe` from the output folder. Keep the DLLs and other build files alongside the EXE.
+The output is placed in `artifacts/desktop-0.6.0/`. The build script derives the default folder from the project's version; you can override it with `-OutputDirectory`. Run `Start-Manager.cmd` from the project root or `AssettoServerManager.exe` from the output folder. Keep the DLLs and other build files alongside the EXE.
 
 The script uses the local SDK in `.tools/dotnet` if available, otherwise `dotnet` from PATH. Visual Studio is not required.
 
@@ -55,16 +57,16 @@ The script runs the core tests, publishes the Windows x64 application with .NET 
 Additional UI checks use local game and server installations:
 
 ```powershell
-.\artifacts\desktop-0.5.2\AssettoServerManager.exe --smoke .\artifacts\qa --servers-root 'D:\AC Servers'
-.\artifacts\desktop-0.5.2\AssettoServerManager.exe --window-qa .\artifacts\window-qa --servers-root 'D:\AC Servers'
-.\artifacts\desktop-0.5.2\AssettoServerManager.exe --ui-qa .\artifacts\details-qa
+.\artifacts\desktop-0.6.0\AssettoServerManager.exe --smoke .\artifacts\qa --servers-root 'D:\AC Servers'
+.\artifacts\desktop-0.6.0\AssettoServerManager.exe --window-qa .\artifacts\window-qa --servers-root 'D:\AC Servers'
+.\artifacts\desktop-0.6.0\AssettoServerManager.exe --ui-qa .\artifacts\details-qa
 ```
 
 Replace `D:\AC Servers` with your own fixture server location. Use `--game-root <path>` if Steam detection is unavailable. Smoke/window checks read the catalog and configurations, exercise drafts in memory and generate PNG screenshots. `--ui-qa` additionally checks fresh startup, actual caret/placeholder coordinates, the car details dialog, stable save controls, unchanged/reverted saves without new backups, failed-save draft preservation, inline validation notices, folder rename and context-menu process guards, and shared settings/Content Manager recovery. Writes are limited to disposable fixtures under its output folder. These checks do not write live configurations or start servers. They are not intended for a clean machine without game content.
 
 Wizard integration checks are separate: `--wizard-qa <output>` installs from an existing program folder, while `--wizard-download-qa <output>` downloads the official AssettoServer ZIP. Each creates a **new test server under the output folder**, starts it, checks HTTP `/INFO`, TCP/UDP listeners and acceptance of an AC client handshake, and stops only that test process. Pass --servers-root <path> to provide the runtime source installations. They require the local game, server installations and the Imola track; the download check also needs internet access. Use a fresh output folder for each run. These checks do not modify existing servers. Acceptance of a handshake does not validate the game's subsequent content loading.
 
-On pushes and pull requests, [GitHub Actions](https://github.com/drkreis/ac-server-manager/blob/master/.github/workflows/build.yml) runs the core tests and builds the portable Windows package. This workflow does not upload downloadable artifacts or publish a release. UI checks that require game content are performed locally.
+On pushes and pull requests, [GitHub Actions](https://github.com/drkreis/ac-server-manager/blob/master/.github/workflows/build.yml) runs the core tests and builds the portable Windows package. It also runs isolated process lifecycle checks without game content. This workflow does not upload downloadable artifacts or publish a release. UI checks that require game content are performed locally.
 
 ## Project structure
 
@@ -80,6 +82,6 @@ The SDK, builds, settings, logs, backups, server configurations and game content
 
 This version has been tested on a local Windows 11 x64 installation. The wizard creates free-roam practice servers and installs AssettoServer separately from the application. Presets, server cloning, a complete weather/AI/plugin editor, port forwarding and external connectivity checks are not available yet. A suitable AI spline is required for traffic; the presence of a spline alone does not confirm its suitability.
 
-Saved configuration changes require a server restart to take effect. Closing the manager prompts you to terminate servers it started. The current Stop action forcibly terminates the process.
+Saved configuration changes require a server restart to take effect. Closing the manager prompts you to terminate servers it started. Stop first requests a normal shutdown and waits up to ten seconds. Forced termination requires a separate confirmation if normal shutdown fails. Externally started servers are never stopped by this manager.
 
 This is an independent project distributed under the [MIT license](LICENSE). The .NET components bundled with the release are distributed under their own terms; their license texts and notices are included in the archive's `licenses/` folder.

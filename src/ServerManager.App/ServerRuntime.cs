@@ -6,7 +6,7 @@ using static ServerManager.Core.UiText;
 
 namespace ServerManager.App;
 
-public enum ServerRunState { Checking, Stopped, Starting, Managed, External, Unknown }
+public enum ServerRunState { Checking, Stopped, Starting, Managed, Unready, Stopping, Failed, External, Unknown }
 
 public sealed class ServerRow(ServerProfile profile) : INotifyPropertyChanged
 {
@@ -14,17 +14,18 @@ public sealed class ServerRow(ServerProfile profile) : INotifyPropertyChanged
     public string Folder => Profile.Folder;
     public ServerRunState State { get; private set; } = ServerRunState.Checking;
     public int[] ProcessIds { get; private set; } = [];
-    public bool CanDelete => State == ServerRunState.Stopped;
-    public bool IsRunning => State is ServerRunState.Starting or ServerRunState.Managed or ServerRunState.External;
+    public bool CanDelete => State is ServerRunState.Stopped or ServerRunState.Failed;
+    public bool IsRunning => State is ServerRunState.Starting or ServerRunState.Managed or ServerRunState.Unready or ServerRunState.Stopping or ServerRunState.External;
     public string StatusLabel => T(State switch
     {
         ServerRunState.Stopped => "Остановлен", ServerRunState.Starting => "Запускается…",
-        ServerRunState.Managed => "Запущен", ServerRunState.External => "Запущен вне менеджера",
+        ServerRunState.Managed => "Готов локально", ServerRunState.External => "Запущен вне менеджера",
+        ServerRunState.Unready => "Готовность не подтверждена", ServerRunState.Stopping => "Останавливается…", ServerRunState.Failed => "Неожиданно завершён",
         ServerRunState.Unknown => "Статус недоступен", _ => "Проверяю статус…"
     });
     public string StatusColor => State switch
     {
-        ServerRunState.Starting => "#FF5D43", ServerRunState.Managed or ServerRunState.External => "#75D9AA",
+        ServerRunState.Starting or ServerRunState.Unready or ServerRunState.Failed or ServerRunState.Stopping => "#FF5D43", ServerRunState.Managed or ServerRunState.External => "#75D9AA",
         ServerRunState.Unknown => "#FF5D43", _ => "#747D8D"
     };
     public string StatusHint => StatusLabel + (ProcessIds.Length > 0 ? " · PID " + string.Join(", ", ProcessIds) : "")

@@ -28,10 +28,11 @@ public partial class MainWindow
         lastSelectedPath=created.Path; ServerRoot.Text=wizard.SelectedServersRoot; GameRoot.Text=wizard.SelectedGamePath;
         await InitializeAsync();
         if(profile?.Path!=created.Path || !Editor.IsEnabled) throw new InvalidOperationException("Created server was not selected in the editor.");
-        var start=new ProcessStartInfo(Path.Combine(created.Path,"AssettoServer.exe")) {WorkingDirectory=created.Path,UseShellExecute=false,CreateNoWindow=true,RedirectStandardOutput=true,RedirectStandardError=true,StandardOutputEncoding=Encoding.UTF8,StandardErrorEncoding=Encoding.UTF8};
-        using var process=Process.Start(start) ?? throw new InvalidOperationException("QA server did not start.");
-        var stdout=process.StandardOutput.ReadToEndAsync(); var stderr=process.StandardError.ReadToEndAsync();
+        var server=await LaunchManagedAsync(created);
+        var process=server.Process;
+        await server.Startup;
         var healthy=false;
+        var stoppedNormally=false;
         try
         {
             using var client=new HttpClient {Timeout=TimeSpan.FromSeconds(2)};
@@ -58,11 +59,13 @@ public partial class MainWindow
         }
         finally
         {
-            if(!process.HasExited) process.Kill();
-            await process.WaitForExitAsync();
-            File.WriteAllText(Path.Combine(output,"created-server.log"),await stdout+"\n"+await stderr);
+            stoppedNormally=await StopManagedAsync(created.Path,server,false);
+            if(!stoppedNormally && !process.HasExited) process.Kill();
+            await server.Completion;
+            File.WriteAllText(Path.Combine(output,"created-server.log"),server.Log.ToString());
         }
         if(!healthy) throw new InvalidOperationException("Created server failed its HTTP /INFO and TCP/UDP listener checks. See created-server.log.");
-        File.AppendAllText(Path.Combine(output,"wizard-result.txt"),"\nPASS: editor selects the new profile; actual AssettoServer startup, HTTP /INFO, TCP/UDP listeners and accepted AC client handshake; only the QA process was stopped.");
+        if(!stoppedNormally || process.ExitCode!=0) throw new InvalidOperationException("Actual AssettoServer did not shut down normally through the new lifecycle.");
+        File.AppendAllText(Path.Combine(output,"wizard-result.txt"),"\nPASS: editor selects the new profile; actual AssettoServer through the managed lifecycle, matching HTTP /INFO, TCP/UDP listeners, accepted AC client handshake and normal Ctrl+C shutdown with exit code 0; only the QA process was stopped.");
     }
 }

@@ -1,4 +1,4 @@
-# AC Server Manager 0.5.2 Preview
+# AC Server Manager 0.6.0 Preview
 
 A Windows application built with C#, WPF and .NET 10. PowerShell is only used for building and packaging.
 
@@ -14,9 +14,9 @@ Maximizing uses the native window frame with custom styling through WindowChrome
 
 ## Getting started
 
-This guide covers version **0.5.2-preview**. Available Windows x64 packages are listed in [Releases](https://github.com/drkreis/ac-server-manager/releases); a source checkout may be newer than a published package. Extract the entire portable archive into a writable folder and run `AssettoServerManager.exe`; .NET is included. Keep the DLLs and other files alongside the EXE.
+This guide covers version **0.6.0-preview**. Available Windows x64 packages are listed in [Releases](https://github.com/drkreis/ac-server-manager/releases); a source checkout may be newer than a published package. Extract the entire portable archive into a writable folder and run `AssettoServerManager.exe`; .NET is included. Keep the DLLs and other files alongside the EXE.
 
-For a local build from source, double-click `Start-Manager.cmd` or `artifacts/desktop-0.5.2/AssettoServerManager.exe`. This regular build requires the .NET 10 Desktop Runtime x64.
+For a local build from source, double-click `Start-Manager.cmd` or `artifacts/desktop-0.6.0/AssettoServerManager.exe`. This regular build requires the .NET 10 Desktop Runtime x64.
 
 Building requires the .NET 10 SDK. The script uses the local SDK in `.tools/dotnet` if available, otherwise `dotnet` from PATH. Visual Studio is not required; the SDK and cache are excluded from Git. See [README.md](README.md) for build and portable packaging commands.
 
@@ -37,9 +37,9 @@ After installing new mods, click **Refresh catalog** on the catalog tab. The ser
 
 **Validation** compares installed cars' `data.acd` files with the server copies and reports unpacked data without a `data.acd`, even if an old archive is already present on the server. It also compares the track's `surfaces.ini` and `models_<layout>.ini` files. Differences are reported as findings because CSP may require specially modified server files. Existing content is not replaced automatically; restart the server after synchronizing it.
 
-If a server was started by an older manager, you can connect to it from the new version. To manage its process, stop it in the old manager and start it in the new one. Do not run servers with conflicting ports simultaneously. The manager only stops its own processes and offers to terminate them when closing.
+If a server was started by an older manager, you can connect to it from the new version. To manage its process, stop it in the old manager and start it in the new one. Do not run servers with conflicting ports simultaneously. The manager only stops its own processes and asks before closing with running servers. Each managed server has its own hidden console. **Stop** requests Ctrl+C and waits up to ten seconds. If the server does not exit, a separate dialog offers **Force stop**; Cancel leaves it running. Closing is cancelled if any server is left running. Closing during save or a server-folder operation is blocked until that operation finishes.
 
-The server list and selected profile header display **Stopped**, **Starting…**, **Running** or **Running externally**. Status updates every three seconds. For external launches, the AssettoServer process is matched to the executable's folder; matching port numbers do not determine which profile owns a process. The tooltip shows its PID. If the process path cannot be accessed, **Status unavailable** is displayed. Process status does not confirm internet accessibility. This manager cannot stop external processes.
+The server list and selected profile header distinguish **Stopped**, **Starting…**, **Ready locally**, **Readiness unconfirmed**, **Stopping…**, **Exited unexpectedly** and **Running externally**. A ready status requires a valid HTTP `/INFO` response for the selected track/layout. An HTTP response from the wrong track or an invalid response cannot confirm readiness. The initial startup check waits up to 30 seconds; after a timeout the process is left running for inspection, without an automatic kill or restart. Status updates every three seconds. For external launches, the AssettoServer process is matched to the executable's folder; matching port numbers do not determine which profile owns a process. The tooltip shows its PID. If the process path cannot be accessed, **Status unavailable** is displayed. Process status does not confirm internet accessibility. This manager cannot stop external processes.
 
 ### Car details and skins
 
@@ -79,11 +79,21 @@ Presets and server cloning; packing unpacked data into `data.acd`; updating exis
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tests
-.\artifacts\desktop-0.5.2\AssettoServerManager.exe --smoke .\artifacts\qa --servers-root 'D:\AC Servers'
-.\artifacts\desktop-0.5.2\AssettoServerManager.exe --window-qa .\artifacts\window-qa --servers-root 'D:\AC Servers'
-.\artifacts\desktop-0.5.2\AssettoServerManager.exe --ui-qa .\artifacts\details-qa
+.\artifacts\desktop-0.6.0\AssettoServerManager.exe --smoke .\artifacts\qa --servers-root 'D:\AC Servers'
+.\artifacts\desktop-0.6.0\AssettoServerManager.exe --window-qa .\artifacts\window-qa --servers-root 'D:\AC Servers'
+.\artifacts\desktop-0.6.0\AssettoServerManager.exe --ui-qa .\artifacts\details-qa
 ```
 
 Core tests use temporary servers and check messages in both languages, slot reordering with field preservation, and mod metadata parsing. The smoke test reads real profiles and the catalog, exercises UI actions in memory, checks RU / EN switching while preserving drafts, and verifies language settings compatibility. It renders PNG screenshots in both languages. `--window-qa` additionally shows a test window, checks actual maximize/restore behavior, content bounds and modal dialog button results. These checks do not write live configurations or start servers. The build uses the local SDK or an SDK from PATH.
 
 Core tests also cover creation from a folder and ZIP, generated configuration and content, cancellation, failed installation cleanup, refusal to overwrite an existing server, ZIP path confinement and separation from private source data. Separate wizard integration checks exercise all five steps in Russian and English, start only a newly created test server and check its acceptance of an AC client handshake; see [README.md](README.md) for their behavior and requirements.
+
+## Reliability in 0.6
+
+Application settings are written to a flushed temporary file and atomically replaced. The last valid prior settings are kept in `settings.json.bak`. A truncated or invalid settings file falls back to this backup; corrupt files do not replace a valid backup. Identical preferences are not rewritten. This protection applies to application preferences; the three server configuration files still use the separate backup/rollback mechanism described above.
+
+The server log is bounded and refreshed at most five times per second rather than rebuilding the text for every message. Extremely long lines are truncated. Clear **Follow log** to inspect older messages without being scrolled to the end; the bounded history can still drop its oldest entries.
+
+**Save report** is available in the status bar even without a selected server. The text report includes application/runtime versions, process states, manager errors and recent output from the selected server. Configuration and game files are not attached. Known password/token/key/identity fields and selected local paths are redacted; review the text before sharing because arbitrary plugin output may contain other private values. Reports are saved locally and never uploaded automatically.
+
+Manager errors are retained in `%LOCALAPPDATA%\ACServerManager\logs\manager-errors.log` and one rotated `.previous` file. QA modes keep their logs under their own output folder. See [RELIABILITY.md](RELIABILITY.md) for isolated process checks and remaining limits.

@@ -9,6 +9,7 @@ void Put(string path, string text) { Directory.CreateDirectory(Path.GetDirectory
 try
 {
     UiText.Language = "ru";
+    ReliabilityTests.Run(Path.Combine(root, "reliability"));
     ContentAndRemovalTests.Run(Path.Combine(root, "content-and-removal"));
     SaveAndFolderTests.Run(Path.Combine(root, "save-and-folders"));
     CreationTests.Run(Path.Combine(root, "creation"));

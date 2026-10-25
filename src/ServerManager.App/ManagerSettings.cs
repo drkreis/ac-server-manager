@@ -1,10 +1,12 @@
 using System.IO;
 using System.Text.Json;
+using ServerManager.Core;
 
 namespace ServerManager.App;
 
 internal static class ManagerSettings
 {
+    internal static bool Valid(UserSettings s) => s.ServersRoot != null && s.GameRoot != null && s.ContentManager != null && s.Language is "ru" or "en";
     internal static string SharedFile => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ACServerManager", "settings.json");
     internal static UserSettings? Load(string appDirectory, string sharedFile, bool isolated)
     {
@@ -26,7 +28,11 @@ internal static class ManagerSettings
         }
         var settings = new List<UserSettings>();
         foreach (var file in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
-            try { if (File.Exists(file) && JsonSerializer.Deserialize<UserSettings>(File.ReadAllText(file)) is { } value) settings.Add(value); }
+            try
+            {
+                var value = SafeJsonStore.Load<UserSettings>(file, Valid);
+                if (value != null) settings.Add(value);
+            }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException) { }
         var selected = settings.FirstOrDefault();
         if (selected == null) return null;

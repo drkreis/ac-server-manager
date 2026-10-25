@@ -22,3 +22,6 @@ jobs:
       - name: Run core tests and package portable Windows x64 application
         shell: pwsh
         run: ./Publish-Desktop.ps1
+      - name: Check process lifecycle and reliability without game content
+        shell: pwsh
+        run: ./Test-Reliability.ps1
