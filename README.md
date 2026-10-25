@@ -34,8 +34,6 @@ Server overview with track selection, configuration and start/stop controls in *
 
 </details>
 
-To update these images or add badges, see the [README artwork guide](docs/README-assets.md) (in Russian).
-
 ## Features
 
 - A five-step server creation wizard: install AssettoServer, select a track and layout, add cars and slots, configure basic settings, and review before creating.

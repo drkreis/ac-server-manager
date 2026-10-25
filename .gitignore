@@ -31,3 +31,6 @@ extra_cfg.yml
 data.acd
 *.kn5
 *.bank
+
+# Local README artwork notes
+/docs/README-assets.md
