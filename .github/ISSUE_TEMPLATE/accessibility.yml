@@ -1,0 +1,42 @@
+name: Accessibility report
+description: Report a barrier involving keyboard use, readability or assistive technology.
+title: "[Accessibility]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping make the application more usable.
+        See the [accessibility notes](https://github.com/drkreis/ac-server-manager/blob/master/ACCESSIBILITY.md) for current limitations. This form is public; remove personal information from any attachments.
+  - type: input
+    id: version
+    attributes:
+      label: Application version
+      description: Give the version from the title bar or the source commit.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment and input method
+      description: Include Windows version, display scaling and relevant assistive technology or keyboard/input setup. Medical or personal background is not needed.
+    validations:
+      required: true
+  - type: textarea
+    id: task
+    attributes:
+      label: Task and affected control
+      description: What were you trying to do? Describe where the barrier occurs and how to reach it.
+    validations:
+      required: true
+  - type: textarea
+    id: barrier
+    attributes:
+      label: Barrier and expected behavior
+      description: Explain what happens and what would let you complete the task. Suggestions are welcome but not required.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Additional details
+      description: Optional screenshots, recordings, related controls or workarounds. Review attachments for private information before sharing.

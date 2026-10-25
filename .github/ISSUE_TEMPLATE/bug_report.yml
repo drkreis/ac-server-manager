@@ -1,0 +1,63 @@
+name: Bug report
+description: Report a reproducible problem in AC Server Manager.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please search existing issues first. This form is public.
+        Report security vulnerabilities privately through [Security](https://github.com/drkreis/ac-server-manager/security/advisories/new).
+        Review logs and screenshots before attaching them; do not upload live server folders or game files.
+  - type: input
+    id: version
+    attributes:
+      label: Application version
+      description: Copy the version from the title bar, or give the commit if built from source.
+      placeholder: "For example: 0.7.0-preview"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include Windows version, ZIP/source installation and UI language. Add AssettoServer, Content Manager or CSP versions only when relevant.
+      placeholder: "Windows 11 x64; release ZIP; English; display scaling 125%"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Describe the smallest example that reproduces the problem, using sample data.
+      placeholder: |
+        1. Open ...
+        2. Select ...
+        3. Click ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include the exact error text and whether the issue happens every time.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Reviewed diagnostics or screenshots
+      description: Optional. Save report can help, but recognized-value redaction does not remove every possible private detail. Review the report yourself before attaching it.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy
+      options:
+        - label: I have removed passwords, tokens, GUIDs/Steam IDs, IP addresses and personal paths from any shared data.
+          required: true

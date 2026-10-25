@@ -1,0 +1,31 @@
+name: Feature request
+description: Describe a need or propose an improvement.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: Please search existing requests first. Describe the task and the problem before proposing a solution. A request does not imply a commitment to implement it.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: Who needs this, and what is difficult with the current behavior?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Explain how the application would behave. Mockups or examples are welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or workarounds
+      description: What have you tried? Are there simpler ways to meet the same need?
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Optional examples, related issues or constraints. Remove private information from attachments.

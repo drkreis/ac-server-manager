@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability privately
+    url: https://github.com/drkreis/ac-server-manager/security/advisories/new
+    about: Use private vulnerability reporting instead of posting exploit details in a public issue.
+  - name: Read the user guide
+    url: https://github.com/drkreis/ac-server-manager/blob/master/DESKTOP.md
+    about: Setup, server management, diagnostics and backup recovery.
