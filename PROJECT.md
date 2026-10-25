@@ -113,7 +113,7 @@ Run these tests with `Build-Desktop.ps1 -Tests`, `Publish-Desktop.ps1` or `dotne
 | `.git/` | Local Git history and repository configuration. Git communicates commits through `push`; you do not upload this directory manually. | No manual upload. |
 | `.tools/` | Locally installed SDK, CLI home and NuGet cache used by scripts. Not application source. | No. |
 | `.local-archive/` | Retained old PowerShell prototype and earlier development files. The current app does not load them. | No. |
-| `artifacts/` | Builds, portable ZIPs, checksums, screenshots, logs and temporary QA servers. Old version folders remain as historical local outputs. | No; attach the selected ZIP/checksum to a Release instead. |
+| `artifacts/` | Builds, portable ZIPs, checksums, screenshots, logs and temporary QA servers. Old version folders remain as historical local outputs. | No; attach the selected ZIP to a Release instead. |
 | `bin/` in a project | Default compiler output, including executable/library files. | No. |
 | `obj/` in a project | Restore/build intermediates and generated WPF code. Recreated by the SDK. | No. |
 | `tests/scratch-*/` | Temporary test fixtures if retained after an interrupted test. | No. |
@@ -215,7 +215,7 @@ After pushing the source and verifying the intended commit:
 1. Open the repository's [Releases](https://github.com/drkreis/ac-server-manager/releases) page and choose **Draft a new release**.
 2. Create the tag **`v0.6.0-preview`**, targeting the pushed `master` revision. If this tag already exists, inspect it before reusing it; do not move an existing published version silently.
 3. Use the title **AC Server Manager 0.6.0 Preview** and copy `.github/releases/v0.6.0-preview.md` into the description.
-4. Attach the matching **`ACServerManager-0.6.0-preview-win-x64.zip`** and **`SHA256SUMS.txt`** from the same packaging output folder.
+4. Attach the matching **`ACServerManager-0.6.0-preview-win-x64.zip`**. The packaging script also generates `SHA256SUMS.txt` for local verification; a separate checksum attachment is not required for this release.
 5. Select **This is a pre-release**, review the attachments, then choose **Publish release**, or **Save draft** to leave it unpublished.
 
 These are separate operations: pushing source, building a package, and publishing a Release. The automatically generated **Source code** ZIP on GitHub does not replace the portable application attachment. See [GitHub's release guide](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository).
