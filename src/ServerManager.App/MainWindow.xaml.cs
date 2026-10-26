@@ -92,7 +92,7 @@ public partial class MainWindow : Window
     private string slotFilter = "all", cmPath = "", lastSelectedPath = "";
     private readonly string settingsFile;
     private readonly string[] args;
-    private bool IsTestMode => args.Contains("--ui-qa") || args.Contains("--smoke") || args.Contains("--window-qa") || args.Contains("--wizard-qa") || args.Contains("--wizard-download-qa") || args.Contains("--runtime-qa") || (args.Contains("--folder-qa") || args.Contains("--recovery-qa"));
+    private bool IsTestMode => args.Contains("--ui-qa") || args.Contains("--smoke") || args.Contains("--window-qa") || args.Contains("--wizard-qa") || args.Contains("--wizard-download-qa") || args.Contains("--runtime-qa") || (args.Contains("--folder-qa") || (args.Contains("--recovery-qa") || args.Contains("--templates-qa")));
     private Dictionary<string, string>? draftBaseline;
     public MainWindow(string[] args)
     {
@@ -341,7 +341,7 @@ public partial class MainWindow : Window
         try
         {
             var runtime = ServerList.Items.OfType<ServerRow>().Select(r => r.Profile.Path).FirstOrDefault(p => File.Exists(Path.Combine(p, "AssettoServer.exe")));
-            var wizard = new CreateServerWindow(ServerRoot.Text, GameRoot.Text, runtime, catalog) { Owner = this };
+            var wizard = new CreateServerWindow(ServerRoot.Text, GameRoot.Text, runtime, catalog, PresetsFile) { Owner = this };
             if (wizard.ShowDialog() != true || wizard.CreatedPath == null) return;
             dirty = false; lastSelectedPath = wizard.CreatedPath;
             ServerRoot.Text = wizard.SelectedServersRoot; GameRoot.Text = wizard.SelectedGamePath;
@@ -877,6 +877,10 @@ public partial class MainWindow : Window
         using (var file = File.Create(Path.Combine(destination, "maximized-catalog-preview.png"))) maxPng.Save(file);
         SystemCommands.RestoreWindow(this); await Task.Delay(450);
         if (WindowState != WindowState.Normal) throw new InvalidOperationException("Native restore failed.");
+        var restoredImage = new RenderTargetBitmap((int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), 96, 96, PixelFormats.Pbgra32);
+        restoredImage.Render(this);
+        var restoredPng = new PngBitmapEncoder(); restoredPng.Frames.Add(BitmapFrame.Create(restoredImage));
+        using (var file = File.Create(Path.Combine(destination, "restored-window-preview.png"))) restoredPng.Save(file);
         File.WriteAllText(Path.Combine(destination, "window-result.txt"), $"PASS: native maximize/restore; content [{start},{end}] is inside work area [{work.Left},{work.Top},{work.Right},{work.Bottom}]; invisible resize frame [{maximized.Left},{maximized.Top},{maximized.Right},{maximized.Bottom}].");
         foreach (var accept in new[] { false, true })
         {

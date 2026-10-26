@@ -1,10 +1,10 @@
-<Window x:Class="ServerManager.App.CreateServerWindow"
+<Window x:Class="ServerManager.App.CreateServerWindow" Style="{StaticResource AppWindow}"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:local="clr-namespace:ServerManager.App" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
  Title="AC Server Manager — Create server" Width="1080" Height="800" MinWidth="940" MinHeight="680"
  WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Background="{StaticResource Bg}" Foreground="#EDEFF4"
  FontFamily="Bahnschrift" FontSize="14" TextOptions.TextFormattingMode="Display">
- <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="70" ResizeBorderThickness="6" GlassFrameThickness="0" UseAeroCaptionButtons="False"/></shell:WindowChrome.WindowChrome>
+ <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="70" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/></shell:WindowChrome.WindowChrome>
  <Window.Resources><local:FileImageConverter x:Key="FileImage"/></Window.Resources>
  <Grid x:Name="WizardRoot" Margin="24" Background="{StaticResource Bg}"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
   <Grid Margin="0,0,0,16"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
@@ -15,6 +15,7 @@
   <Border Grid.Row="2" Background="{StaticResource Panel}" CornerRadius="10" Padding="20">
    <Grid x:Name="StepContainer">
     <ScrollViewer x:Name="BasicsStep" VerticalScrollBarVisibility="Auto"><StackPanel>
+     <StackPanel x:Name="PresetBlock" Margin="0,0,0,16"><TextBlock Text="{DynamicResource PresetChoose}"/><DockPanel><Button x:Name="ApplyPresetButton" DockPanel.Dock="Right" Content="{DynamicResource PresetApply}" Click="ApplyPreset" Margin="8,5,0,12"/><Button DockPanel.Dock="Right" Content="↻" Click="RefreshPresets" Margin="8,5,0,12"/><ComboBox x:Name="PresetChoice" DisplayMemberPath="Name"/></DockPanel><TextBlock Text="{DynamicResource PresetWizardHint}" Foreground="{StaticResource Muted}" TextWrapping="Wrap"/></StackPanel>
      <TextBlock Text="{DynamicResource WServerName}"/><TextBox x:Name="ServerName" Text="My AC Server"/>
      <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="18"/><ColumnDefinition/></Grid.ColumnDefinitions>
       <StackPanel><TextBlock Text="{DynamicResource WRoot}"/><DockPanel><Button DockPanel.Dock="Right" Content="{DynamicResource L009}" Click="BrowseRoot" Margin="8,5,0,12"/><TextBox x:Name="ServersPath"/></DockPanel></StackPanel>
@@ -31,7 +32,7 @@
     </Grid>
     <Grid x:Name="CarsStep" Visibility="Collapsed"><Grid.ColumnDefinitions><ColumnDefinition Width="300"/><ColumnDefinition Width="20"/><ColumnDefinition/></Grid.ColumnDefinitions>
      <DockPanel><TextBox x:Name="CarSearch" DockPanel.Dock="Top" Style="{StaticResource SearchBox}" Tag="{DynamicResource SearchCarsPlaceholder}" TextChanged="CarSearchChanged"/>
-      <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0"><ComboBox x:Name="CarSkin" DisplayMemberPath="Name"/><Button Content="{DynamicResource WAddCar}" Click="AddCar" Background="{StaticResource Accent}" Margin="0"/></StackPanel>
+      <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0"><ComboBox x:Name="CarSkin" DisplayMemberPath="Name"/><Button Content="{DynamicResource WAddCar}" Click="AddCar" Style="{StaticResource AccentButton}" Margin="0"/></StackPanel>
       <ListBox x:Name="Cars" SelectionChanged="CarSelected"><ListBox.ItemTemplate><DataTemplate><StackPanel><TextBlock Text="{Binding Name}" TextWrapping="Wrap"/><TextBlock Text="{Binding Id}" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/></StackPanel></DataTemplate></ListBox.ItemTemplate></ListBox>
      </DockPanel>
      <DockPanel Grid.Column="2"><StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0"><TextBlock x:Name="SlotCount" Foreground="{StaticResource Accent}"/><TextBlock Text="{DynamicResource WSlotsHint}" Foreground="{StaticResource Muted}" TextWrapping="Wrap" LineHeight="20" Margin="0,8,0,0"/><Button Content="{DynamicResource WRemoveCar}" Click="RemoveCar" HorizontalAlignment="Left" Margin="0,12,0,0"/></StackPanel>
@@ -47,19 +48,21 @@
     <ScrollViewer x:Name="SettingsStep" Visibility="Collapsed" VerticalScrollBarVisibility="Auto"><StackPanel>
      <TextBlock Text="{DynamicResource WPractice}" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,12"/>
      <TextBlock Text="{DynamicResource WTime}"/><TextBox x:Name="StartTime" Text="18:00" Width="180" HorizontalAlignment="Left"/>
+     <CheckBox x:Name="InfinitePractice" Content="{DynamicResource PresetInfinite}" IsChecked="True" Margin="0,0,0,12"/><WrapPanel><StackPanel Width="180" Margin="0,0,16,0"><TextBlock Text="{DynamicResource PresetDuration}"/><TextBox x:Name="PracticeMinutes" Text="120"><TextBox.Style><Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}"><Style.Triggers><DataTrigger Binding="{Binding IsChecked, ElementName=InfinitePractice}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></TextBox.Style></TextBox></StackPanel><StackPanel Width="180"><TextBlock Text="{DynamicResource PresetSlotLimit}"/><TextBox x:Name="SlotLimit" Style="{StaticResource SearchBox}" Tag="{DynamicResource L020}"/></StackPanel></WrapPanel>
+     <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="{DynamicResource PresetFuel}"/><TextBox x:Name="FuelRate" Text="0"/></StackPanel><StackPanel Grid.Column="2"><TextBlock Text="{DynamicResource PresetDamage}"/><TextBox x:Name="DamageRate" Text="0"/></StackPanel><StackPanel Grid.Column="4"><TextBlock Text="{DynamicResource PresetTyres}"/><TextBox x:Name="TyreWearRate" Text="0"/></StackPanel></Grid>
      <TextBlock Text="{DynamicResource WJoinPassword}"/><PasswordBox x:Name="JoinPassword"/>
      <TextBlock Text="{DynamicResource WAdminPassword}"/><PasswordBox x:Name="AdminPassword"/><TextBlock Text="{DynamicResource WAdminHint}" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,0,0,18"/>
      <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/></Grid.ColumnDefinitions>
       <StackPanel><TextBlock Text="TCP"/><TextBox x:Name="TcpPort" Text="9600"/></StackPanel><StackPanel Grid.Column="2"><TextBlock Text="UDP"/><TextBox x:Name="UdpPort" Text="9600"/></StackPanel><StackPanel Grid.Column="4"><TextBlock Text="HTTP"/><TextBox x:Name="HttpPort" Text="8081"/></StackPanel>
      </Grid>
      <TextBlock Text="{DynamicResource WPortsHint}" Foreground="{StaticResource Muted}" TextWrapping="Wrap"/>
-     <CheckBox x:Name="WeatherFx" Content="{DynamicResource WWeather}"/><CheckBox x:Name="Lobby" Content="{DynamicResource WLobby}"/>
+     <CheckBox x:Name="EnableTraffic" Content="{DynamicResource PresetEnableAi}" IsChecked="True"/><CheckBox x:Name="WeatherFx" Content="{DynamicResource WWeather}"/><CheckBox x:Name="Lobby" Content="{DynamicResource WLobby}"/>
      <TextBlock Text="{DynamicResource WLobbyHint}" Foreground="{StaticResource Muted}" TextWrapping="Wrap" LineHeight="21"/>
     </StackPanel></ScrollViewer>
     <ScrollViewer x:Name="ReviewStep" Visibility="Collapsed" VerticalScrollBarVisibility="Auto"><StackPanel><TextBlock Text="{DynamicResource WReviewTitle}" FontSize="22" FontWeight="SemiBold"/><TextBlock x:Name="ReviewText" TextWrapping="Wrap" LineHeight="25" Margin="0,18,0,18"/><Border Background="#22262F" CornerRadius="6" Padding="16"><TextBlock Text="{DynamicResource WReviewHint}" Foreground="{StaticResource Muted}" TextWrapping="Wrap" LineHeight="22"/></Border></StackPanel></ScrollViewer>
    </Grid>
   </Border>
   <StackPanel Grid.Row="3" Margin="0,14,0,0"><TextBlock x:Name="Message" TextWrapping="Wrap" Foreground="{StaticResource Accent}"/><ProgressBar x:Name="Progress" Height="4" Margin="0,10,0,0" IsIndeterminate="True" Visibility="Collapsed" Foreground="{StaticResource Accent}"/></StackPanel>
-  <Grid Grid.Row="4" Margin="0,18,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><Button x:Name="CancelButton" Content="{DynamicResource L143}" Click="CancelWizard" HorizontalAlignment="Left"/><Button x:Name="BackButton" Grid.Column="1" Content="{DynamicResource WBack}" Click="Previous"/><Button x:Name="NextButton" Grid.Column="2" Content="{DynamicResource WNext}" Click="Next" Background="{StaticResource Accent}" Margin="0" MinWidth="130"/></Grid>
+  <Grid Grid.Row="4" Margin="0,18,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><Button x:Name="CancelButton" Content="{DynamicResource L143}" Click="CancelWizard" HorizontalAlignment="Left"/><Button x:Name="BackButton" Grid.Column="1" Content="{DynamicResource WBack}" Click="Previous"/><Button x:Name="NextButton" Grid.Column="2" Content="{DynamicResource WNext}" Click="Next" Style="{StaticResource AccentButton}" Margin="0" MinWidth="130"/></Grid>
  </Grid>
 </Window>

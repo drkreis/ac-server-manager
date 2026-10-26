@@ -25,7 +25,14 @@ public sealed record ServerCreationRequest
     public int StartMinutes { get; init; } = 18 * 60;
     public bool WeatherFx { get; init; }
     public bool PublishToLobby { get; init; }
-    public bool Ai => Cars.Any(c => c.Role != "none");
+    public int FuelRate { get; init; }
+    public int DamageRate { get; init; }
+    public int TyreWearRate { get; init; }
+    public int PracticeMinutes { get; init; } = 120;
+    public bool InfinitePractice { get; init; } = true;
+    public int? SlotLimit { get; init; }
+    public bool? EnableAi { get; init; }
+    public bool Ai => Cars.Any(c => c.Role != "none") && (EnableAi ?? true);
 }
 
 public static class ServerCreation
@@ -37,7 +44,7 @@ public static class ServerCreation
         if (string.IsNullOrWhiteSpace(folder) || folder.Length > 80 || folder.Trim() != folder || folder.EndsWith('.')
             || folder.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || folder.IndexOfAny(['/', '\\', ':']) >= 0
             || folder.Any(c => c < 32) || folder is "." or ".."
-            || Regex.IsMatch(folder, @"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)", RegexOptions.IgnoreCase))
+            || Regex.IsMatch(folder, @"^(CON|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³])(?:\.|$)", RegexOptions.IgnoreCase))
             throw new InvalidOperationException(T("Введите допустимое имя новой папки без слешей и специальных символов."));
         var target = Path.GetFullPath(Path.Combine(root, folder));
         if (Directory.Exists(target) || File.Exists(target)) throw new InvalidOperationException(T("Папка уже существует. Выберите другое имя; существующие серверы не перезаписываются."));
@@ -58,6 +65,9 @@ public static class ServerCreation
         var track = catalog.FindTrack(request.Track, request.Layout) ?? throw new InvalidOperationException(T("Выберите трассу и вариант из установленного контента."));
         if (!File.Exists(Path.Combine(track.Directory, track.Layout, "data", "surfaces.ini"))) throw new InvalidOperationException(T("У выбранного варианта нет data/surfaces.ini. Проверьте установку трассы."));
         var count = request.Cars.Sum(c => (long)c.Count);
+        if (new[] { request.FuelRate, request.DamageRate, request.TyreWearRate }.Any(v => v is < 0 or > 500)
+            || request.PracticeMinutes is < 1 or > 1440 || request.SlotLimit is < 1 or > 255 || request.SlotLimit < count)
+            throw new InvalidOperationException(T("Проверьте длительность, лимит слотов и расход: допустимы 1–1440 минут, до 255 слотов и 0–500%."));
         if (request.Cars.Count == 0 || count is < 1 or > 255 || request.Cars.Any(c => c.Count is < 1 or > 255)) throw new InvalidOperationException(T("Добавьте машины: всего от 1 до 255 слотов."));
         if (track.PitBoxes is > 0 && count > track.PitBoxes) throw new InvalidOperationException(T("У трассы {0} пит-боксов; слотов {1}. Уменьшите количество слотов.", track.PitBoxes, count));
         if (request.Cars.All(c => c.Role == "fixed")) throw new InvalidOperationException(T("Добавьте хотя бы один слот для игрока."));
@@ -130,7 +140,7 @@ public static class ServerCreation
                 Directory.Delete(staging, true);
         }
     }
-    private static void PublishDirectory(string staging, string target, CancellationToken cancellation)
+    internal static void PublishDirectory(string staging, string target, CancellationToken cancellation)
     {
         // Antivirus scans may briefly hold a newly extracted executable or its directory.
         // Retry only while our staging folder exists and the destination is still absent.
@@ -152,17 +162,20 @@ public static class ServerCreation
         var ini = "[SERVER]\nCLIENT_SEND_INTERVAL_HZ=20\nLOOP_MODE=1\nFUEL_RATE=0\nDAMAGE_MULTIPLIER=0\nTYRE_WEAR_RATE=0\nALLOWED_TYRES_OUT=-1\nABS_ALLOWED=1\nTC_ALLOWED=1\nSTABILITY_ALLOWED=0\nAUTOCLUTCH_ALLOWED=1\nTYRE_BLANKETS_ALLOWED=0\nTIME_OF_DAY_MULT=0\nWELCOME_MESSAGE=welcome.txt\n\n[PRACTICE]\nNAME=Practice\nTIME=120\nIS_OPEN=1\nINFINITE=1\n\n[DYNAMIC_TRACK]\nSESSION_START=100\n\n[WEATHER_0]\nGRAPHICS=3_clear\nBASE_TEMPERATURE_AMBIENT=20\nBASE_TEMPERATURE_ROAD=6\nVARIATION_AMBIENT=0\nVARIATION_ROAD=0\nWIND_BASE_SPEED_MIN=0\nWIND_BASE_SPEED_MAX=0\nWIND_BASE_DIRECTION=0\nWIND_VARIATION_DIRECTION=0\n";
         var settings = new Dictionary<string, string> { ["NAME"]=request.Name, ["TRACK"]=request.Track, ["CONFIG_TRACK"]=request.Layout,
             ["TCP_PORT"]=request.TcpPort.ToString(), ["UDP_PORT"]=request.UdpPort.ToString(), ["HTTP_PORT"]=request.HttpPort.ToString(),
-            ["MAX_CLIENTS"]=request.Cars.Sum(c => c.Count).ToString(), ["PASSWORD"]=request.Password, ["ADMIN_PASSWORD"]=admin,
+            ["MAX_CLIENTS"]=(request.SlotLimit ?? request.Cars.Sum(c => c.Count)).ToString(), ["PASSWORD"]=request.Password, ["ADMIN_PASSWORD"]=admin,
+            ["FUEL_RATE"]=request.FuelRate.ToString(), ["DAMAGE_MULTIPLIER"]=request.DamageRate.ToString(), ["TYRE_WEAR_RATE"]=request.TyreWearRate.ToString(),
             ["REGISTER_TO_LOBBY"]=request.PublishToLobby ? "1" : "0", ["SUN_ANGLE"]=(16.0 * (request.StartMinutes * 60 - 46800) / 3600).ToString(CultureInfo.InvariantCulture) };
         var extra = "# Created with AC Server Manager; AssettoServer fills unspecified defaults.\nEnableAi: false\nEnableWeatherFx: false\n";
         var profile = new ServerProfile { Path="", Ini=ini, Extra=extra, Entries="", OriginalBytes=[] };
         foreach (var car in request.Cars)
             for (var i = 0; i < car.Count; i++) profile.Slots.Add(new Slot { Model=car.Model, Skin=car.Skin, Ai=car.Role });
         var result = profile.Build(settings, request.Ai, request.WeatherFx);
+        result["server_cfg.ini"] = ConfigText.Set(result["server_cfg.ini"], "PRACTICE", "TIME", request.PracticeMinutes.ToString());
+        result["server_cfg.ini"] = ConfigText.Set(result["server_cfg.ini"], "PRACTICE", "INFINITE", request.InfinitePractice ? "1" : "0");
         if (request.Ai) result["extra_cfg.yml"] += "AiParams:\n  MaxPlayerCount: " + profile.PlayerSlots + "\n";
         return result;
     }
-    private static bool RuntimeFile(string relative)
+    internal static bool RuntimeFile(string relative)
     {
         var name = relative.Replace('\\', '/');
         if (name.Contains('/') && !name.StartsWith("plugins/", StringComparison.OrdinalIgnoreCase)) return false;

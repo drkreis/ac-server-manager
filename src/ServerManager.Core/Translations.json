@@ -744,8 +744,8 @@
     "Ru": "Количество — число слотов этой машины. Трафик занимает отдельные слоты; «Игрок / AI» использует свободный слот. Скины и порядок можно изменить после создания."
   },
   "WPractice": {
-    "En": "Free roam · infinite practice",
-    "Ru": "Свободная езда · бесконечная практика"
+    "En": "Free roam · practice",
+    "Ru": "Свободная езда · практика"
   },
   "WTime": {
     "En": "Start time (HH:mm)",
@@ -1767,5 +1767,217 @@
   "DiagWorking": {
     "Ru": "Проверяю настройки, контент и порты…",
     "En": "Checking settings, content and ports…"
+  },
+  "Templates0": {
+    "Ru": "Не удалось подобрать свободные порты. Укажите их вручную.",
+    "En": "Could not suggest available ports. Enter them manually."
+  },
+  "Templates1": {
+    "Ru": "Копирование доступно только для локальных папок.",
+    "En": "Copying is available for local folders only."
+  },
+  "Templates2": {
+    "Ru": "Выберите отдельную папку сервера, а не корень диска.",
+    "En": "Select a separate server folder, not a drive root."
+  },
+  "Templates3": {
+    "Ru": "Создавайте копию в отдельной папке рядом с исходным сервером.",
+    "En": "Create the copy in a separate folder alongside the source server."
+  },
+  "Templates4": {
+    "Ru": "TCP и HTTP должны быть разными; диапазон портов 1–65535.",
+    "En": "TCP and HTTP must differ; port range is 1–65535."
+  },
+  "Templates5": {
+    "Ru": "Для копии выберите порты, отличающиеся от исходного сервера.",
+    "En": "Choose ports that differ from those of the source server."
+  },
+  "Templates6": {
+    "Ru": "Копирую файл: {0}",
+    "En": "Copying file: {0}"
+  },
+  "Templates7": {
+    "Ru": "Исходный сервер изменился во время копирования. Повторите операцию.",
+    "En": "The source server changed during copying. Try again."
+  },
+  "Templates8": {
+    "Ru": " · {0} слотов",
+    "En": " · {0} slots"
+  },
+  "Templates9": {
+    "Ru": "Некорректный пресет: проверьте название, контент, слоты и числовые параметры.",
+    "En": "Invalid preset: check its name, content, slots and numeric settings."
+  },
+  "Templates10": {
+    "Ru": "Библиотека пресетов слишком большая.",
+    "En": "The preset library is too large."
+  },
+  "Templates11": {
+    "Ru": "Библиотека пресетов повреждена или имеет неизвестный формат. Исходный файл сохранён.",
+    "En": "The preset library is damaged or uses an unknown format. The original file was kept."
+  },
+  "Templates12": {
+    "Ru": "Пресет с таким названием уже существует.",
+    "En": "A preset with this name already exists."
+  },
+  "Templates13": {
+    "Ru": "Для пресета не найден контент:\n{0}\nУстановите его и обновите каталог. Черновик не изменён.",
+    "En": "Preset content was not found:\n{0}\nInstall it and refresh the catalog. The draft was not changed."
+  },
+  "Templates14": {
+    "Ru": "Проверьте длительность, лимит слотов и расход: допустимы 1–1440 минут, до 255 слотов и 0–500%.",
+    "En": "Check duration, slot limit and consumption: 1–1440 minutes, up to 255 slots and 0–500%."
+  },
+  "Templates15": {
+    "Ru": "Сохраняются трасса, слоты и основные параметры из файлов сервера. Пароли, порты, пути и плагины не включаются. Несохранённые изменения не используются.",
+    "En": "Saves the track, slots and basic settings from the server files. Passwords, ports, paths and plugins are excluded. Unsaved edits are not used."
+  },
+  "Templates17": {
+    "Ru": "Пресет сохранён: {0}. Выберите его в мастере создания сервера.",
+    "En": "Preset saved: {0}. Select it in the server creation wizard."
+  },
+  "Templates18": {
+    "Ru": "Копия создана: {0}. Проверьте настройки перед запуском.",
+    "En": "Copy created: {0}. Review settings before starting."
+  },
+  "Templates19": {
+    "Ru": "Остановите исходный сервер перед копированием.",
+    "En": "Stop the source server before copying."
+  },
+  "Templates21": {
+    "Ru": "Сохранённая версия: {0}",
+    "En": "Saved version: {0}"
+  },
+  "Templates22": {
+    "Ru": " (копия)",
+    "En": " (copy)"
+  },
+  "Templates23": {
+    "Ru": "Копирование отменено. Новый сервер не создан.",
+    "En": "Copy cancelled. No new server was created."
+  },
+  "Templates25": {
+    "Ru": "Пресетов пока нет. ПКМ по серверу → «Сохранить как пресет». ",
+    "En": "No presets yet. Right-click a server and choose Save as preset."
+  },
+  "Templates26": {
+    "Ru": "Название пресета",
+    "En": "Preset name"
+  },
+  "Templates28": {
+    "Ru": "Удалить пресет «{0}»? Серверы не изменятся.",
+    "En": "Delete preset “{0}”? Servers will not change."
+  },
+  "Templates30": {
+    "Ru": "Выберите пресет из списка.",
+    "En": "Select a preset from the list."
+  },
+  "Templates31": {
+    "Ru": "Заменить трассу, машины и основные параметры черновика пресетом «{0}»? Имя, папка, порты и пароли останутся прежними.",
+    "En": "Replace the draft track, cars and basic settings with preset “{0}”? Name, folder, ports and passwords will stay unchanged."
+  },
+  "Templates33": {
+    "Ru": "Применить",
+    "En": "Apply"
+  },
+  "Templates34": {
+    "Ru": "Пресет «{0}» применён. Проверьте шаги мастера; свой AI-сплайн при необходимости выберите заново.",
+    "En": "Preset “{0}” applied. Review the wizard steps; select a custom AI spline again if needed."
+  },
+  "Templates35": {
+    "Ru": "Введите целые числовые параметры.",
+    "En": "Enter whole-number settings."
+  },
+  "CloneTitle": {
+    "Ru": "Копировать сервер",
+    "En": "Copy server"
+  },
+  "PresetsTitle": {
+    "Ru": "Пресеты",
+    "En": "Presets"
+  },
+  "PresetSave": {
+    "Ru": "Сохранить как пресет",
+    "En": "Save as preset"
+  },
+  "CloneDestination": {
+    "Ru": "Папка назначения",
+    "En": "Destination folder"
+  },
+  "CloneAdvanced": {
+    "Ru": "Также скопировать плагины и расширенные настройки",
+    "En": "Also copy plugins and advanced settings"
+  },
+  "CloneAdvancedHint": {
+    "Ru": "По выбору переносятся plugins и дополнительные файлы cfg, а extra_cfg.yml сохраняется целиком. Они могут содержать ключи и внешние пути — проверьте их перед запуском.",
+    "En": "Optional: copy plugins and additional cfg files, and preserve all of extra_cfg.yml. They may contain keys and external paths; review them before starting."
+  },
+  "CloneHint": {
+    "Ru": "Копируется сохранённая версия сервера: программа, три конфига и серверный контент. Не переносятся логи, бэкапы, кэш и списки пользователей. Пароль входа и привязки игроков очищаются; пароль администратора создаётся заново. Публикация в lobby выключена. Исходный сервер не изменяется, копия автоматически не запускается.",
+    "En": "Copies the saved server: runtime, three configurations and server-side content. Logs, backups, caches and user lists are excluded. Join password and player identities are cleared; the admin password is generated anew. Lobby publication is disabled. The source stays unchanged and the copy does not start automatically."
+  },
+  "PresetsHint": {
+    "Ru": "ПКМ по серверу → «Сохранить как пресет». Пресет выбирается в мастере и содержит трассу, слоты, время и основные параметры. Пароли, порты, пути и плагины не сохраняются.",
+    "En": "Right-click a server and choose Save as preset. Select it in the wizard to fill track, slots, time and basic settings. Passwords, ports, paths and plugins are not saved."
+  },
+  "PresetRename": {
+    "Ru": "Переименовать пресет",
+    "En": "Rename preset"
+  },
+  "PresetDelete": {
+    "Ru": "Удалить пресет",
+    "En": "Delete preset"
+  },
+  "PresetReload": {
+    "Ru": "Обновить список",
+    "En": "Refresh list"
+  },
+  "PresetChoose": {
+    "Ru": "Собственный пресет (необязательно)",
+    "En": "Your preset (optional)"
+  },
+  "PresetApply": {
+    "Ru": "Применить пресет",
+    "En": "Apply preset"
+  },
+  "PresetWizardHint": {
+    "Ru": "Применение заменит трассу, машины и основные параметры черновика. Имя, папка, порты, пароли и источник AssettoServer выбираются отдельно.",
+    "En": "Applying replaces the draft track, cars and basic settings. Choose the name, folder, ports, passwords and AssettoServer source separately."
+  },
+  "PresetDuration": {
+    "Ru": "Практика, минут",
+    "En": "Practice, minutes"
+  },
+  "PresetSlotLimit": {
+    "Ru": "Лимит слотов",
+    "En": "Slot limit"
+  },
+  "PresetFuel": {
+    "Ru": "Топливо, %",
+    "En": "Fuel, %"
+  },
+  "PresetDamage": {
+    "Ru": "Повреждения, %",
+    "En": "Damage, %"
+  },
+  "PresetTyres": {
+    "Ru": "Износ шин, %",
+    "En": "Tyre wear, %"
+  },
+  "PresetInfinite": {
+    "Ru": "Бесконечная практика",
+    "En": "Infinite practice"
+  },
+  "PresetInfinity": {
+    "Ru": "Бесконечно",
+    "En": "Infinite"
+  },
+  "PresetReviewSettings": {
+    "Ru": "\nПрактика: {0} · лимит слотов: {1}\nТопливо: {2}% · повреждения: {3}% · износ шин: {4}%",
+    "En": "\nPractice: {0} · slot limit: {1}\nFuel: {2}% · damage: {3}% · tyre wear: {4}%"
+  },
+  "PresetEnableAi": {
+    "Ru": "Включить AI-трафик для выбранных AI-слотов",
+    "En": "Enable traffic for the selected AI slots"
   }
 }

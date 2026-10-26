@@ -1,4 +1,4 @@
-# Creating a server in AC Server Manager 0.7.0 Preview
+# Creating a server in AC Server Manager 0.8.0 Preview
 
 Click **Create server** above the server list. The wizard follows the application's selected language and dark theme. You can go back to edit earlier choices; a server folder is created only after the final confirmation.
 
@@ -14,7 +14,7 @@ Choose how to install AssettoServer:
 - **Local AssettoServer program folder** uses the executable, runtime libraries and plugin binaries from an existing installation. Its server configurations, passwords, administrator lists and game content are not copied.
 - **Local AssettoServer ZIP** installs the Windows x64 program from a downloaded archive, including an archive with a single enclosing folder.
 
-The new configurations are generated from your choices in all three cases. This is not server cloning. Runtime license and notice files are retained when present in the source.
+The new configurations are generated from your choices in all three cases. To copy an existing server instead, use its Copy server context-menu action; the wizard still generates fresh configuration files. Runtime license and notice files are retained when present in the source.
 
 If the GitHub API rate limit is reached, downloading falls back to GitHub's [direct link to the latest release asset](https://docs.github.com/en/repositories/releasing-projects-on-github/linking-to-releases). The source remains the official AssettoServer repository. A local ZIP or program folder can be used when internet access is unavailable.
 
@@ -56,6 +56,17 @@ On success, the wizard closes and the new server is selected in the main editor.
 
 ## Scope of this preview
 
-The wizard creates a basic local server. Presets, cloning, automated mod downloads, `data.acd` packing, router configuration and a full weather/plugin editor are deferred. Review advanced AssettoServer settings separately as needed. Changing server configuration after creation requires saving and restarting the server.
+The wizard creates a basic local server. Automated mod downloads, `data.acd` packing, router configuration and a full weather/plugin editor are deferred. Review advanced AssettoServer settings separately as needed. Changing server configuration after creation requires saving and restarting the server.
 
-This guide covers source version **0.7.0-preview**. Available portable packages are listed in [GitHub Releases](https://github.com/drkreis/ac-server-manager/releases). Building or packaging locally does not publish a release.
+This guide covers source version **0.8.0-preview**. Available portable packages are listed in [GitHub Releases](https://github.com/drkreis/ac-server-manager/releases). Building or packaging locally does not publish a release.
+
+
+## Your presets in 0.8
+
+Right-click a server in the main window and choose **Save as preset**. This reads its saved configuration; save editor changes first if you want to include them. Give the preset a unique name. Open **Presets** below Create server to rename, delete or reload your library. These operations do not change server folders.
+
+The first wizard step has a preset selector and an explicit **Apply preset** button. Applying fills the installed track/layout, ordered cars/skins/roles/counts, time, the AI switch, WeatherFX, slot limit, fuel, damage, tyre wear and practice duration/infinite setting. A populated car draft requires confirmation before replacement. Cancel preserves the draft. Missing track/car/skin IDs are listed and the current choices stay in place; the manager does not download or silently remove missing content.
+
+Name, destination, runtime source, ports, passwords and lobby choice stay as entered in the wizard. A custom AI spline path is cleared when applying a preset and must be chosen again if needed. Presets represent basic practice-server settings, not arbitrary INI/YAML/plugin documents or a full server clone. All normal content, AI, port and creation checks still run before a server is made.
+
+The library is stored per user in `%LOCALAPPDATA%\ACServerManager\presets.json`, separate from server folders and application builds. It contains IDs and settings, not game files, passwords, ports, player identities or filesystem paths. A previous valid JSON version is retained as `.bak`; unknown/damaged libraries are not overwritten silently. Import/export is deferred.

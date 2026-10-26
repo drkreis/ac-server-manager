@@ -1,6 +1,6 @@
-# AC Server Manager 0.7 reliability and recovery notes
+# AC Server Manager 0.8 reliability, recovery and reuse notes
 
-0.7 is a local preview focused on actionable diagnostics and backup recovery, building on the 0.6 reliability work. Building this checkout does not publish anything to GitHub. These changes are a step toward 1.0, not a declaration of production stability.
+0.8 is a local preview adding server copying and reusable presets to diagnostics and backup recovery, building on the 0.6 reliability work. Building this checkout does not publish anything to GitHub. These changes are a step toward 1.0, not a declaration of production stability.
 
 ## Changes
 
@@ -34,7 +34,7 @@ The process checks cover two simultaneous servers, isolated normal shutdown, fin
 To test an existing regular or portable build, supply its directory and a fresh output path:
 
 ```powershell
-.\Test-Reliability.ps1 -ApplicationDirectory .\artifacts\desktop-0.7.0 -OutputDirectory .\artifacts\my-reliability-check
+.\Test-Reliability.ps1 -ApplicationDirectory .\artifacts\desktop-0.8.0 -OutputDirectory .\artifacts\my-reliability-check
 ```
 
 Since 0.7 the script also runs `--recovery-qa` with fake content: actionable draft errors/warnings, severity filters, RU/EN resources, affected-field focus, stale markers, cancellation, omitted optional defaults, read-only checking, backup previews and privacy, confirmation Cancel, exact configuration restore/editor reload, safety undo and stale/incomplete backup refusal. Runtime checks verify that a running server cannot be restored. Core tests additionally inject a mid-commit sharing violation and verify rollback, legacy backups, optional content removal/undo, manifest tampering and path confinement.
@@ -48,7 +48,7 @@ GitHub Actions runs these process and game-free UI checks after its core tests a
 - Exercise close/stop/save interaction, interrupted operations and disk failures. Test unexpected process termination and very slow initialization with real server versions.
 - Confirm normal shutdown with supported AssettoServer versions and plugins; a plugin which hangs may still require confirmed forced termination.
 - Initial local readiness is not continuous health monitoring, an AC client handshake or internet reachability. A process left unconfirmed after the initial timeout is not automatically retried or restarted.
-- Test diagnostics and restoration against more server/plugin configurations and manually managed historical backups. Presets, cloning, automatic updates and remote server management remain outside 0.7.
+- Test diagnostics and restoration against more server/plugin configurations and manually managed historical backups. Preset import/export, automatic updates and remote server management remain deferred.
 
 ## Implementation references
 
@@ -56,3 +56,14 @@ The native console behavior follows Microsoft's [console creation](https://learn
 
 
 Diagnostic checksum behavior is checked against AssettoServer's [ChecksumManager.cs](https://github.com/compujuckel/AssettoServer/blob/master/AssettoServer/Server/ChecksumManager.cs). Alternative car archives and explicit missing-car-checksum exceptions are recognized; special CSP track handling remains a warning requiring review. Local readiness and connection checks use direct loopback HTTP without redirects or an HTTP proxy. Matching local bytes alone does not guarantee successful client loading.
+
+
+## Reuse in 0.8
+
+Copying operates on a stopped source and stages a new sibling/root destination before publishing it. It does not overwrite folders or start the result. The source snapshot is rechecked; cancellation, detected changes or ordinary write errors discard the owned staging directory. Source and active-port conflicts are checked. Core does not inspect Windows processes itself; the app supplies fresh checks before copying and publishing. Multi-file staging does not constitute protection against arbitrary external programs or power loss.
+
+The default identity is separate: blank join password, new admin password, cleared GUID/driver/team fields and disabled lobby publication. Runtime/server content are copied without logs, backups and known cache/user-list locations. Advanced YAML/plugin/cfg files are an explicit opt-in and can retain sensitive values and external paths. Review diagnostics and custom plugin/path/alternative-checksum dependencies before starting a copy.
+
+Presets serialize a strict basic-settings DTO. They do not serialize raw INI/YAML, private fields, network ports, custom spline paths or installation paths. The recoverable JSON store uses a per-library lock; validation rejects malformed schemas, excessive sizes, invalid IDs/numbers and duplicate names. Content validation completes before controls change, and a populated car draft requires a confirmation. Cancel and missing content preserve the prior draft. Preset capture and copy both read saved files.
+
+`Test-Reliability.ps1` now includes `--templates-qa`: actual context-menu save/copy, rename/delete decisions, applying/replacing presets, missing-content behavior, wizard field/layout preservation, review values, selected stopped copies and bilingual dialogs. Runtime QA also refuses copying a running source. `TemplateTests.cs` covers byte preservation, identity clearing, optional plugin files, cancellation/source-change cleanup and library privacy/recovery.

@@ -15,6 +15,9 @@ tests/scratch-*/
 
 # Machine-specific settings and credentials
 settings.json
+presets.json
+presets.json.bak
+presets.json.lock
 .env
 .env.*
 *.pfx

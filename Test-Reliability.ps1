@@ -55,6 +55,18 @@ try {
         Get-Content -LiteralPath (Join-Path $recoveryResults 'recovery-result.txt')
     }
     finally { $recoveryProcess.Dispose() }
+    $templatesResults = Join-Path $OutputDirectory 'templates-results'
+    $templatesProcess = Start-Process -FilePath $app -ArgumentList @('--templates-qa', ('"' + $templatesResults + '"')) -WindowStyle Hidden -PassThru
+    try {
+        if (-not $templatesProcess.WaitForExit(90000)) { $templatesProcess.Kill(); throw 'Templates UI checks exceeded ninety seconds.' }
+        if ($templatesProcess.ExitCode -ne 0) {
+            $errorFile = Join-Path $templatesResults 'smoke-error.txt'
+            if (Test-Path -LiteralPath $errorFile) { Get-Content -LiteralPath $errorFile }
+            throw ('Templates UI checks failed: ' + $templatesProcess.ExitCode)
+        }
+        Get-Content -LiteralPath (Join-Path $templatesResults 'templates-result.txt')
+    }
+    finally { $templatesProcess.Dispose() }
 
 }
 finally {

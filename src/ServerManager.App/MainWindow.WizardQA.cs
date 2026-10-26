@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
 using System.Windows;
 using ServerManager.Core;
@@ -51,7 +52,8 @@ public partial class MainWindow
                     var tcp=int.Parse(ConfigText.Get(created.Ini,"SERVER","TCP_PORT"));
                     var udp=int.Parse(ConfigText.Get(created.Ini,"SERVER","UDP_PORT"));
                     File.AppendAllText(Path.Combine(output, "probe-result.txt"), $"HTTP {(int)response.StatusCode}; TCP listener={network.GetActiveTcpListeners().Any(p => p.Port == tcp)}; UDP listener={network.GetActiveUdpListeners().Any(p => p.Port == udp)}\n");
-                    if(response.IsSuccessStatusCode && network.GetActiveTcpListeners().Any(p=>p.Port==tcp) && network.GetActiveUdpListeners().Any(p=>p.Port==udp))
+                    // Actual protocol acceptance is stronger than Windows' sometimes stale TCP table.
+                    if(response.IsSuccessStatusCode && ServerPorts.FindConflicts(tcp,int.Parse(port),udp).Contains("UDP "+udp))
                     {
                         var handshake=await HandshakeQA.Request(tcp,created.Slots.First(s=>s.Ai!="fixed").Model);
                         File.WriteAllText(Path.Combine(output,"handshake-result.txt"),"Handshake response: 0x"+handshake[0].ToString("X2"));
@@ -60,6 +62,7 @@ public partial class MainWindow
                     }
                 }
                 catch(HttpRequestException ex) { File.AppendAllText(Path.Combine(output, "probe-result.txt"), ex.GetType().Name + ": " + DiagnosticSanitizer.Redact(ex.Message) + "\n"); }
+                catch(SocketException ex) { File.AppendAllText(Path.Combine(output, "probe-result.txt"), ex.SocketErrorCode + "\n"); }
                 catch(TaskCanceledException) { File.AppendAllText(Path.Combine(output, "probe-result.txt"), "HTTP timeout\n"); }
             }
         }
@@ -73,5 +76,7 @@ public partial class MainWindow
         if(!healthy) throw new InvalidOperationException("Created server failed its HTTP /INFO and TCP/UDP listener checks. See created-server.log.");
         if(!stoppedNormally || process.ExitCode!=0) throw new InvalidOperationException("Actual AssettoServer did not shut down normally through the new lifecycle.");
         File.AppendAllText(Path.Combine(output,"wizard-result.txt"),"\nPASS: editor selects the new profile; actual AssettoServer through the managed lifecycle, matching HTTP /INFO, TCP/UDP listeners, accepted AC client handshake and normal Ctrl+C shutdown with exit code 0; only the QA process was stopped.");
+        await ExerciseRealTemplates(created, catalog!, root, output);
+
     }
 }

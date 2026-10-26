@@ -42,6 +42,11 @@ public partial class MainWindow
         remove.SetBinding(IsEnabledProperty, new Binding(nameof(ServerRow.CanDelete)) { Source = row });
         remove.Click += DeleteServer;
         menu.Items.Add(remove);
+        menu.Items.Add(new Separator());
+        var clone = new MenuItem { Tag = row }; clone.SetResourceReference(HeaderedItemsControl.HeaderProperty, "CloneTitle");
+        clone.SetBinding(IsEnabledProperty, new Binding(nameof(ServerRow.CanDelete)) { Source = row }); clone.Click += CloneServer; menu.Items.Add(clone);
+        var preset = new MenuItem { Tag = row }; preset.SetResourceReference(HeaderedItemsControl.HeaderProperty, "PresetSave");
+        preset.Click += SavePreset; menu.Items.Add(preset);
     }
     private async Task EnsureFolderStopped(string path)
     {

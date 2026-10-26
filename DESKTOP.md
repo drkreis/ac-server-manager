@@ -1,4 +1,4 @@
-# AC Server Manager 0.7.0 Preview
+# AC Server Manager 0.8.0 Preview
 
 A Windows application built with C#, WPF and .NET 10. PowerShell is only used for building and packaging.
 
@@ -14,9 +14,9 @@ Maximizing uses the native window frame with custom styling through WindowChrome
 
 ## Getting started
 
-This guide covers version **0.7.0-preview**. Available Windows x64 packages are listed in [Releases](https://github.com/drkreis/ac-server-manager/releases); a source checkout may be newer than a published package. Extract the entire portable archive into a writable folder and run `AssettoServerManager.exe`; .NET is included. Keep the DLLs and other files alongside the EXE.
+This guide covers version **0.8.0-preview**. Available Windows x64 packages are listed in [Releases](https://github.com/drkreis/ac-server-manager/releases); a source checkout may be newer than a published package. Extract the entire portable archive into a writable folder and run `AssettoServerManager.exe`; .NET is included. Keep the DLLs and other files alongside the EXE.
 
-For a local build from source, double-click `Start-Manager.cmd` or `artifacts/desktop-0.7.0/AssettoServerManager.exe`. This regular build requires the .NET 10 Desktop Runtime x64.
+For a local build from source, double-click `Start-Manager.cmd` or `artifacts/desktop-0.8.0/AssettoServerManager.exe`. This regular build requires the .NET 10 Desktop Runtime x64.
 
 Building requires the .NET 10 SDK. The script uses the local SDK in `.tools/dotnet` if available, otherwise `dotnet` from PATH. Visual Studio is not required; the SDK and cache are excluded from Git. See [README.md](README.md) for build and portable packaging commands.
 
@@ -73,15 +73,15 @@ A successful save is reported in the status bar without a confirmation dialog. V
 
 ## Deferred features
 
-Presets and server cloning; packing unpacked data into `data.acd`; updating existing server content; detailed weather, AI and plugin forms; port forwarding and external diagnostics. The presence of AI files does not confirm their suitability for traffic.
+Preset import/export; packing unpacked data into `data.acd`; updating existing server content; detailed weather, AI and plugin forms; port forwarding and external diagnostics. The presence of AI files does not confirm their suitability for traffic.
 
 ## Validation
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Desktop.ps1 -Tests
-.\artifacts\desktop-0.7.0\AssettoServerManager.exe --smoke .\artifacts\qa --servers-root 'D:\AC Servers'
-.\artifacts\desktop-0.7.0\AssettoServerManager.exe --window-qa .\artifacts\window-qa --servers-root 'D:\AC Servers'
-.\artifacts\desktop-0.7.0\AssettoServerManager.exe --ui-qa .\artifacts\details-qa
+.\artifacts\desktop-0.8.0\AssettoServerManager.exe --smoke .\artifacts\qa --servers-root 'D:\AC Servers'
+.\artifacts\desktop-0.8.0\AssettoServerManager.exe --window-qa .\artifacts\window-qa --servers-root 'D:\AC Servers'
+.\artifacts\desktop-0.8.0\AssettoServerManager.exe --ui-qa .\artifacts\details-qa
 ```
 
 Core tests use temporary servers and check messages in both languages, slot reordering with field preservation, and mod metadata parsing. The smoke test reads real profiles and the catalog, exercises UI actions in memory, checks RU / EN switching while preserving drafts, and verifies language settings compatibility. It renders PNG screenshots in both languages. `--window-qa` additionally shows a test window, checks actual maximize/restore behavior, content bounds and modal dialog button results. These checks do not write live configurations or start servers. The build uses the local SDK or an SDK from PATH.
@@ -98,7 +98,7 @@ The server log is bounded and refreshed at most five times per second rather tha
 
 Manager errors are retained in `%LOCALAPPDATA%\ACServerManager\logs\manager-errors.log` and one rotated `.previous` file. QA modes keep their logs under their own output folder. See [RELIABILITY.md](RELIABILITY.md) for isolated process checks and remaining limits.
 
-## Changing folders in 0.7.0
+## Changing folders in 0.8.0
 
 Choosing a new servers folder refreshes its list immediately without reloading game content. When typing or pasting either folder path, press **Enter** or leave the field to apply it; **Escape** restores the applied path. A nonexistent or inaccessible path is rejected and the previous path/profile is retained. Equivalent paths differing only in case or a trailing separator do not reload the draft.
 
@@ -129,3 +129,18 @@ Before any changed file is committed, the current three configurations and affec
 New save backups include `manager-backup.json` with file hashes and recorded absences. Older complete backups remain readable, including the historical content directory layout, but cannot identify files that were originally absent. Incomplete, unsupported or damaged copies cannot be restored. Preview does not change files. Restore rejects a comparison if current files or the chosen backup have changed since preview. Refresh history to compare again.
 
 Restoration supports local server folders, rejects symbolic links/junctions and game-folder targets, stages replacements and attempts rollback on ordinary write failures. Multi-file restore is not power-loss atomic. Backup retention, deletion and scheduled backups are not included; keep important copies outside the working server folder as well.
+
+
+## Copy a server in 0.8
+
+Stop the source server, then right-click it and choose **Copy server**. The dialog uses the saved version, suggests a new folder/name and ports, and never overwrites an existing destination. Review the destination and ports before copying. If you have unsaved editor changes, the normal discard decision applies before switching to the resulting copy; cancelling the dialog preserves the existing draft.
+
+The default copy includes the runtime, the three edited configuration files, server-side content and the default welcome message. It clears the join password and slot GUID/driver/team identities, generates a new administrator password, disables lobby publication and uses separate ports. Logs, backup/cache folders, user lists and unrelated root files are excluded. Unknown INI fields and slot settings are retained; the welcome path is reset to the copied/default `welcome.txt`.
+
+**Also copy plugins and advanced settings** additionally includes plugin files and extra cfg files and keeps `extra_cfg.yml` intact. These files can contain tokens, external paths or other machine-specific settings. This option is off by default. With it off, the new extra config contains basic AI/WeatherFX switches and a player-count limit. Advanced checksum/plugin/spline settings may therefore need review for customized sources. A copy is local to this computer; it is not a portable export of every external dependency.
+
+The manager rechecks that the source is stopped, stages the files in a private temporary folder, verifies the copied source snapshot, then publishes the complete destination. Cancellation or an ordinary failure removes only that operation's temporary copy. Links, nested source/destination paths, game targets and occupied/source ports are rejected. The source configurations are not rewritten. The copy is selected after success and is not started automatically; run Validation and review it before starting.
+
+## Presets
+
+Use **Save as preset** from a server's context menu and **Presets** below Create server to manage your saved choices. Presets use the saved file state rather than an unsaved editor draft. See [WIZARD.md](WIZARD.md) for their exact scope, storage and application behavior.

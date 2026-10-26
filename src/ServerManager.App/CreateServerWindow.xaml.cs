@@ -43,7 +43,7 @@ public partial class CreateServerWindow : Window
     public string? CreatedPath { get; private set; }
     public string SelectedGamePath => GamePath.Text;
     public string SelectedServersRoot => ServersPath.Text;
-    public CreateServerWindow(string serversRoot, string gamePath, string? runtimeFolder, ContentCatalog? initialCatalog)
+    public CreateServerWindow(string serversRoot, string gamePath, string? runtimeFolder, ContentCatalog? initialCatalog, string? presetsPath = null)
     {
         InitializeComponent();
         catalog = initialCatalog;
@@ -65,6 +65,7 @@ public partial class CreateServerWindow : Window
         var candidate = "my-ac-server"; var i = 2;
         while (Directory.Exists(Path.Combine(ServersPath.Text, candidate))) candidate = "my-ac-server-" + i++;
         FolderName.Text = candidate;
+        presetsFile = presetsPath; ReloadPresetChoices();
     }
     private void LanguageChanged(object? sender, PropertyChangedEventArgs e) => RefreshLanguage();
     private void RefreshLanguage()
@@ -82,6 +83,7 @@ public partial class CreateServerWindow : Window
             request.Cars.Where(c => c.Role != "fixed").Sum(c => c.Count), request.Cars.Where(c => c.Role == "fixed").Sum(c => c.Count),
             request.TcpPort, request.UdpPort, request.HttpPort, StartTime.Text,
             SourceMode.SelectedIndex == 0 ? T("Официальный стабильный релиз") : SourcePath.Text);
+        ReviewText.Text += T("\nПрактика: {0} · лимит слотов: {1}\nТопливо: {2}% · повреждения: {3}% · износ шин: {4}%", request.InfinitePractice ? T("Бесконечно") : request.PracticeMinutes.ToString(), request.SlotLimit ?? request.Cars.Sum(c => c.Count), request.FuelRate, request.DamageRate, request.TyreWearRate);
     }
     private void SuggestPorts()
     {
@@ -102,9 +104,7 @@ public partial class CreateServerWindow : Window
     }
     private void CheckPorts(ServerCreationRequest request)
     {
-        var network = IPGlobalProperties.GetIPGlobalProperties();
-        if (network.GetActiveTcpListeners().Any(p => p.Port == request.TcpPort || p.Port == request.HttpPort)
-            || network.GetActiveUdpListeners().Any(p => p.Port == request.UdpPort))
+        if (ServerPorts.FindConflicts(request.TcpPort, request.HttpPort, request.UdpPort).Length > 0)
             throw new InvalidOperationException(T("Один из выбранных портов занят. Измените порты или остановите другой сервер."));
     }
     private void SourceModeChanged(object sender, SelectionChangedEventArgs e)
@@ -167,8 +167,10 @@ public partial class CreateServerWindow : Window
                     try { var game = GamePath.Text; catalog = await Task.Run(() => ContentCatalog.Load(game)); }
                     finally { SetBusy(false); }
                 }
+                var priorTrack = Layouts.SelectedItem as TrackInfo;
                 Tracks.ItemsSource=catalog.TrackGroups; Cars.ItemsSource=catalog.Cars;
-                if (Tracks.SelectedIndex < 0) Tracks.SelectedIndex=0;
+                Tracks.SelectedItem = Tracks.Items.OfType<TrackGroup>().FirstOrDefault(g => g.Id == priorTrack?.Id) ?? Tracks.Items.OfType<TrackGroup>().FirstOrDefault();
+                if (priorTrack != null) Layouts.SelectedItem = Layouts.Items.OfType<TrackInfo>().FirstOrDefault(t => t.Layout == priorTrack.Layout);
             }
             else if (step == 1 && Layouts.SelectedItem is not TrackInfo) throw new InvalidOperationException(T("Выберите трассу и вариант из установленного контента."));
             else if (step == 2) ValidateContentDraft();
@@ -188,14 +190,18 @@ public partial class CreateServerWindow : Window
         var track = Layouts.SelectedItem as TrackInfo ?? throw new InvalidOperationException(T("Выберите трассу и вариант из установленного контента."));
         if (!int.TryParse(TcpPort.Text, out var tcp) || !int.TryParse(UdpPort.Text, out var udp) || !int.TryParse(HttpPort.Text, out var http)) throw new InvalidOperationException(T("Порты должны быть в диапазоне 1–65535."));
         if (!TimeOnly.TryParseExact(StartTime.Text, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var time)) throw new InvalidOperationException(T("Введите время в формате HH:mm."));
-        return new() { ServersRoot=ServersPath.Text, Folder=FolderName.Text, Name=ServerName.Text.Trim(), Track=track.Id, Layout=track.Layout,
+        int Number(string value) => int.TryParse(value, out var n) ? n : throw new InvalidOperationException(T("Введите целые числовые параметры."));
+        var practiceMinutes = InfinitePractice.IsChecked == true
+            ? int.TryParse(PracticeMinutes.Text, out var minutes) && minutes is >= 1 and <= 1440 ? minutes : 120
+            : Number(PracticeMinutes.Text);
+        return new() { EnableAi=EnableTraffic.IsChecked == true, InfinitePractice=InfinitePractice.IsChecked == true, FuelRate=Number(FuelRate.Text), DamageRate=Number(DamageRate.Text), TyreWearRate=Number(TyreWearRate.Text), PracticeMinutes=practiceMinutes, SlotLimit=string.IsNullOrWhiteSpace(SlotLimit.Text) ? null : Number(SlotLimit.Text), ServersRoot=ServersPath.Text, Folder=FolderName.Text, Name=ServerName.Text.Trim(), Track=track.Id, Layout=track.Layout,
             AiSpline=SplinePath.Text, Cars=chosen.Select(c => c.Build()).ToArray(), TcpPort=tcp, UdpPort=udp, HttpPort=http, StartMinutes=time.Hour*60+time.Minute,
             Password=JoinPassword.Password, AdminPassword=AdminPassword.Password, WeatherFx=WeatherFx.IsChecked == true, PublishToLobby=Lobby.IsChecked == true };
     }
     private void ValidateContentDraft()
     {
         var track = (TrackInfo)Layouts.SelectedItem;
-        var request = new ServerCreationRequest { ServersRoot=ServersPath.Text, Folder=FolderName.Text, Name=ServerName.Text.Trim(), Track=track.Id, Layout=track.Layout, AiSpline=SplinePath.Text, Cars=chosen.Select(c => c.Build()).ToArray() };
+        var request = new ServerCreationRequest { ServersRoot=ServersPath.Text, Folder=FolderName.Text, Name=ServerName.Text.Trim(), Track=track.Id, Layout=track.Layout, AiSpline=SplinePath.Text, EnableAi=EnableTraffic.IsChecked == true, Cars=chosen.Select(c => c.Build()).ToArray() };
         ServerCreation.Validate(request, catalog!);
     }
     private async Task CreateAsync()
@@ -261,6 +267,7 @@ public partial class CreateServerWindow : Window
         if (!ready) return;
         var players=0; var traffic=0;
         foreach (var row in chosen) if (int.TryParse(row.Quantity, out var count)) { if (row.Role == "fixed") traffic+=Math.Clamp(count, 0, 255); else players+=Math.Clamp(count, 0, 255); }
+        EnableTraffic.IsEnabled = chosen.Any(c => c.Role != "none");
         SlotCount.Text=T("{0} игроков · {1} AI", players, traffic);
     }
 }

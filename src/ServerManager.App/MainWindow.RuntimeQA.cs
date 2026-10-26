@@ -69,6 +69,11 @@ public partial class MainWindow
             Check(restoreRefused && !BackupsButton.IsEnabled && !one.Process.HasExited && ServerBackups.List(first.Path).Count == 1,
                 "Restore did not refuse a running server before any write.");
             completed.AppendLine("PASS: backup restore checks fresh process state, refuses running servers without writes and disables the history action.");
+            var cloneBlocked = false;
+            try { await CloneServerAsync(new(first.Path,root,"running-copy","Copy",FreePort(),FreePort(),FreePort()), new Progress<string>(), CancellationToken.None); }
+            catch (InvalidOperationException) { cloneBlocked = true; }
+            Check(cloneBlocked && !folderOperation && !Directory.Exists(Path.Combine(root,"running-copy")) && !one.Process.HasExited, "Running source was copied or controls remained blocked.");
+            completed.AppendLine("PASS: copying refuses a running source before any destination is created.");
             var emptyRoot = Path.Combine(output, "empty-root"); Directory.CreateDirectory(emptyRoot);
             ServerRoot.Text = emptyRoot;
             Check(await CommitFolderAsync(ServerRoot) && profile == null && !one.Process.HasExited && !two.Process.HasExited && managed.Count == 2,
