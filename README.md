@@ -7,18 +7,24 @@
 [![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)](#build-from-source)
 [![Windows build and core tests](https://img.shields.io/github/actions/workflow/status/drkreis/ac-server-manager/build.yml?branch=master&event=push&label=build%20%26%20tests&logo=github)](https://github.com/drkreis/ac-server-manager/actions/workflows/build.yml?query=branch%3Amaster+event%3Apush)
 
-**v0.8.0 · Preview** is a Windows application for creating and configuring local [AssettoServer](https://assettoserver.org/) installations. Its main use case is free roam with friends and AI traffic. This is the source version; available download versions are listed in Releases and may differ from the current checkout.
+**[v0.8.0 · Preview](https://github.com/drkreis/ac-server-manager/releases/tag/v0.8.0-preview)** is a Windows application for creating and configuring local [AssettoServer](https://assettoserver.org/) installations. Its main use case is free roam with friends and AI traffic. Version 0.8 adds reusable presets, server copying and a refined dark interface. This is the source version; available download versions are listed in Releases and may differ from the current checkout.
 
 The interface is available in Russian and English. The application is built with C#, WPF and .NET 10.
 
 ## Screenshots
 
-Server overview with track selection, configuration and start/stop controls in **v0.7.0 Preview**.
+The English interface in **v0.8.0 Preview**, showing example servers and installed game content. The screenshots use demonstration paths and settings.
+
+**Server overview** — choose a track layout, edit settings and see server status. The current theme uses orange button outlines, slim muted scrollbars and subtle window borders.
 
 ![AC Server Manager: server overview](docs/screenshots/overview-en.png)
 
 <details>
-<summary>More screenshots: car catalog, skins and backup recovery</summary>
+<summary>More screenshots: slots, catalog, skins, presets, copying and backups</summary>
+
+**Cars and slots** — numbered entry-list slots, skin and role selection, and controls for reordering cars.
+
+![AC Server Manager 0.8: cars, skins and slot roles](docs/screenshots/slots-en.png)
 
 **Car catalog** — browse installed content and add cars to server slots.
 
@@ -28,11 +34,25 @@ Server overview with track selection, configuration and start/stop controls in *
 
 ![AC Server Manager: car details and skin selection](docs/screenshots/car-details-en.png)
 
-**Backup recovery** — compare configuration files before restoring. This screenshot uses a test server with sample data.
+**Your presets** — keep named track, car and basic-setting combinations without passwords, ports or local paths.
+
+![AC Server Manager 0.8: reusable preset library](docs/screenshots/presets-en.png)
+
+**Create server wizard** — apply a saved preset while choosing the new server's own name, folder and installation source.
+
+![AC Server Manager 0.8: creating a server with a preset](docs/screenshots/wizard-presets-en.png)
+
+**Copy server** — prepare a separate copy of a stopped server with a new folder and ports; copying advanced settings and plugins is optional.
+
+![AC Server Manager 0.8: copying a stopped server](docs/screenshots/copy-server-en.png)
+
+**Backup recovery** — compare current and backed-up configuration files before restoring.
 
 ![AC Server Manager: backup comparison and recovery](docs/screenshots/backups-en.png)
 
 </details>
+
+Game/mod previews belong to their respective creators. Game content and mods shown here are not included with the manager.
 
 ## Features
 
